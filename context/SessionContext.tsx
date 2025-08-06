@@ -1,7 +1,7 @@
 'use client';
 
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { createContext, useContext, useState, ReactNode, useLayoutEffect, JSX } from "react";
 
 /**
@@ -38,7 +38,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }): JSX.Elem
     const [session, setSessionState] = useState<Session>({ token: null, authenticated: false });
     const [loading, setLoading] = useState(true);
     const router = useRouter();
-
+    const path = usePathname();
 
     useLayoutEffect(() => {
         const loadSession = async () => {
@@ -49,11 +49,15 @@ export const SessionProvider = ({ children }: { children: ReactNode }): JSX.Elem
                 axios.defaults.headers.common["Authorization"] = `Bearer ${stored}`;
                 setSessionState({ token: stored, authenticated: true });
                 setTimeout(() => setLoading(false), 1000);
-                router.replace('/applicant/recruitment/apply');
+                if (path === '/applicant/recruitment/signin') {
+                    router.replace('/applicant/recruitment/apply');
+                }
             } else {
                 setSessionState({ token: null, authenticated: false });
                 setTimeout(() => setLoading(false), 1000);
-                router.replace('/applicant/recruitment/signin');
+                if (path === '/applicant/recruitment/apply') {
+                    router.replace('/applicant/recruitment/signin');
+                }
             }
         }
         loadSession();

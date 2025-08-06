@@ -20,8 +20,8 @@ import { CalendarDays, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useBasic } from '@/context/BasicContext';
 import TagInput from '@/components/ui/tag-input';
+import { applicantExperienceAdd, applicantCertificateAdd, applicantEducationAdd, editApplicantInfo } from '@/api/applicant';
 export interface QualificationsRef {
-  saveQualifications: () => Promise<void>;
 }
 
 interface WorkExperience {
@@ -34,17 +34,89 @@ interface WorkExperience {
   role_description: string;
 }
 
-const Qualifications = forwardRef<QualificationsRef, {}>(({ }, ref) => {
-  Qualifications.displayName = 'Qualifications';
+interface Education {
+  school: string;
+  degree: string;
+  fieldOfStudy: string;
+}
+
+interface Certifications {
+  certification: string;
+  certificationNumber: string;
+  issueDate: Date;
+  expiryDate: Date;
+}
+
+interface QualificationsProps {
+  jobId: string | null;
+  applicantId: string | null;
+}
+
+const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(function QualificationsComponent({ jobId, applicantId }, ref) {
   const [workExperience, setWorkExperience] = useState<WorkExperience[]>([]);
-  const [education, setEducation] = useState<any>([]);
-  const [certifications, setCertifications] = useState<any>([]);
+  const [education, setEducation] = useState<Education[]>([]);
+  const [certifications, setCertifications] = useState<Certifications[]>([]);
   const [otherLinks, setOtherLinks] = useState<any>([]);
   const [tags, setTags] = useState<any>([]);
   const { skills } = useBasic();
-  const saveQualifications = async () => {
-    console.log(workExperience, education, certifications, otherLinks, tags, skills);
 
+  const [linkedin, setLinkedin] = useState('');
+  const [portfolio, setPortfolio] = useState('');
+  const saveQualifications = async () => {
+    if (!jobId || !applicantId) throw new Error('Missing job or applicant ID');
+    // Work Experience
+    try {
+      for (const work of workExperience) {
+        const payload = {
+          job_id: Number(jobId),
+          applicant_id: Number(applicantId),
+          job_title: work.job_title,
+          company: work.company,
+          location: work.location,
+          from_date: work.from_date ? moment(work.from_date).format('YYYY-MM-DD') : null,
+          to_date: work.to_date ? moment(work.to_date).format('YYYY-MM-DD') : null,
+          is_currently_working: work.is_currently_working,
+          role_description: work.role_description,
+        };
+        await applicantExperienceAdd(payload);
+      }
+      // Certifications
+      for (const cert of certifications) {
+        const payload = {
+          job_id: Number(jobId),
+          applicant_id: Number(applicantId),
+          title: cert.certification,
+          number: cert.certificationNumber,
+          issue_date: cert.issueDate ? moment(cert.issueDate).format('YYYY-MM-DD') : null,
+          expiration_date: cert.expiryDate ? moment(cert.expiryDate).format('YYYY-MM-DD') : null,
+        };
+        await applicantCertificateAdd(payload);
+      }
+      // Education
+      for (const edu of education) {
+        const payload = {
+          job_id: Number(jobId),
+          applicant_id: Number(applicantId),
+          school: edu.school,
+          degree_id: Number(edu.degree),
+          field_of_study: edu.fieldOfStudy,
+        };
+        await applicantEducationAdd(payload);
+      }
+      // Applicant Info
+      const infoPayload = {
+        job_id: Number(jobId),
+        applicant_id: Number(applicantId),
+        skill_ids: tags.map((v: any) => skills.find((s: any) => s.name === v)?.id || v),
+        linkedin_link: linkedin,
+        portfolio_link: portfolio,
+        other_links: otherLinks,
+      };
+      const response = await editApplicantInfo(infoPayload);
+      return response;
+    } catch (error: any) {
+      return error;
+    }
   };
   useImperativeHandle(ref, () => ({
     saveQualifications
@@ -161,18 +233,27 @@ const Qualifications = forwardRef<QualificationsRef, {}>(({ }, ref) => {
             <div className="mt-[10px]">
               <p className="text-[14px]/[20px] text-[#8f8f8f]">Education {index + 1}</p>
 
-              <Input className="w-full h-[48px] mt-[16px]" placeholder="School or University" />
-              <Select className="w-full h-[48px] mt-[16px]" placeholder="Select Degree">
+              <Input className="w-full h-[48px] mt-[16px]" placeholder="School or University"
+                value={edu.school}
+                onChange={(e) => setEducation(education.map((edu, i) => i === index ? { ...edu, school: e.target.value } : edu))}
+              />
+              <Select className="w-full h-[48px] mt-[16px]" placeholder="Select Degree"
+                value={edu.degree}
+                onValueChange={(value) => setEducation(education.map((edu, i) => i === index ? { ...edu, degree: value } : edu))}
+              >
                 <SelectTrigger className="w-full h-[48px] mt-[16px] border border-[#e9e9e9] rounded-[8px]">
                   <SelectValue placeholder="Select Degree" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="qualification1">Qualification 1</SelectItem>
-                  <SelectItem value="qualification2">Qualification 2</SelectItem>
-                  <SelectItem value="qualification3">Qualification 3</SelectItem>
+                  <SelectItem value="1">Qualification 1</SelectItem>
+                  <SelectItem value="2">Qualification 2</SelectItem>
+                  <SelectItem value="3">Qualification 3</SelectItem>
                 </SelectContent>
               </Select>
-              <Input className="w-full h-[48px] mt-[16px]" placeholder="Field of Study" />
+              <Input className="w-full h-[48px] mt-[16px]" placeholder="Field of Study"
+                value={edu.fieldOfStudy}
+                onChange={(e) => setEducation(education.map((edu, i) => i === index ? { ...edu, fieldOfStudy: e.target.value } : edu))}
+              />
             </div>
           </>
         ))}
@@ -190,8 +271,14 @@ const Qualifications = forwardRef<QualificationsRef, {}>(({ }, ref) => {
         {certifications.map((cert, index) => (
           <>
             <div className="mt-[10px]">
-              <Input className="w-full h-[48px] mt-[16px]" placeholder="Certification" />
-              <Input className="w-full h-[48px] mt-[16px]" placeholder="Certification Number" />
+              <Input className="w-full h-[48px] mt-[16px]" placeholder="Certification"
+                value={cert.certification}
+                onChange={(e) => setCertifications(certifications.map((cert, i) => i === index ? { ...cert, certification: e.target.value } : cert))}
+              />
+              <Input className="w-full h-[48px] mt-[16px]" placeholder="Certification Number"
+                value={cert.certificationNumber}
+                onChange={(e) => setCertifications(certifications.map((cert, i) => i === index ? { ...cert, certificationNumber: e.target.value } : cert))}
+              />
               <div className="grid sm:grid-cols-2 grid-cols-1 gap-[16px] mt-[16px]">
                 <div>
                   <Label>Issue Date</Label>
@@ -218,10 +305,7 @@ const Qualifications = forwardRef<QualificationsRef, {}>(({ }, ref) => {
                         defaultMonth={cert.issueDate}
                         selected={cert.issueDate}
                         onSelect={(e) =>
-                          setCertifications({
-                            ...certifications,
-                            issueDate: e as Date,
-                          })
+                          setCertifications(certifications.map((cert, i) => i === index ? { ...cert, issueDate: e as Date } : cert))
                         }
                         numberOfMonths={1}
                       />
@@ -253,10 +337,7 @@ const Qualifications = forwardRef<QualificationsRef, {}>(({ }, ref) => {
                         defaultMonth={cert.expiryDate}
                         selected={cert.expiryDate}
                         onSelect={(e) =>
-                          setCertifications({
-                            ...certifications,
-                            expiryDate: e as Date,
-                          })
+                          setCertifications(certifications.map((cert, i) => i === index ? { ...cert, expiryDate: e as Date } : cert))
                         }
                         numberOfMonths={1}
                       />
@@ -299,13 +380,13 @@ const Qualifications = forwardRef<QualificationsRef, {}>(({ }, ref) => {
       <div className="mt-[32px]">
         <p className="font-medium text-[14px]/[22px] text-[#353535]">LinkedIn</p>
         <div className="mt-[16px]">
-          <Input placeholder="LinkedIn" className="h-[48px]" />
+          <Input placeholder="LinkedIn" className="h-[48px]" value={linkedin} onChange={e => setLinkedin(e.target.value)} />
         </div>
       </div>
       <div className="mt-[32px]">
         <p className="font-medium text-[14px]/[22px] text-[#353535]">Website/Portfolio Link</p>
         <div className="mt-[16px]">
-          <Input placeholder="Website/Portfolio Link" className="h-[48px]" />
+          <Input placeholder="Website/Portfolio Link" className="h-[48px]" value={portfolio} onChange={e => setPortfolio(e.target.value)} />
         </div>
       </div>
       <div className="mt-[32px]">
@@ -315,13 +396,13 @@ const Qualifications = forwardRef<QualificationsRef, {}>(({ }, ref) => {
             <Input
               placeholder="Title"
               value={link.title}
-              onChange={(e) => setOtherLinks({ ...otherLinks, title: e.target.value })}
+              onChange={(e) => setOtherLinks(otherLinks.map((link, i) => i === index ? { ...link, title: e.target.value } : link))}
               className="h-[48px] sm:w-[30%] w-full"
             />
             <Input
               placeholder="Link"
               value={link.link}
-              onChange={(e) => setOtherLinks({ ...otherLinks, link: e.target.value })}
+              onChange={(e) => setOtherLinks(otherLinks.map((link, i) => i === index ? { ...link, link: e.target.value } : link))}
               className="h-[48px] sm:w-[70%] w-full"
             />
           </div>

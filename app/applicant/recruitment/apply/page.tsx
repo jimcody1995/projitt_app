@@ -1,6 +1,6 @@
 'use client';
 import { ArrowRight } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
 import Stepper from './components/steper';
 import { Button } from '@/components/ui/button';
 import ContactInfo from './components/contact-info';
@@ -11,23 +11,40 @@ import Review from './components/review';
 import { applicantContactInfo, applicantResume } from '@/api/applicant';
 import { useSearchParams } from 'next/navigation';
 import { customToast } from '@/components/common/toastr';
-import { ApplicantQuestionsRef } from './components/qualifications';
+import { QualificationsRef } from './components/qualifications';
+import { useEffect } from 'react';
+import { getQuestions } from '@/api/applicant';
+import { QuestionsRef } from './components/questions';
 
 export default function Apply() {
-  const { jobId } = useSearchParams();
-  const [currentStep, setCurrentStep] = React.useState(1);
-  const [stepData, setStepData] = React.useState({
+  const searchParams = useSearchParams();
+  const jobId = searchParams.get('jobId');
+  const applicantId = searchParams.get('applicantId');
+  const [currentStep, setCurrentStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [stepData, setStepData] = useState({
     contactInfo: null,
     resume: null,
     qualifications: null,
     questions: null,
   });
-
+  const [questions, setQuestions] = useState<any>([]);
   // Refs for each step component
   const contactInfoRef = React.useRef<{ validate: () => boolean }>(null);
   const resumeRef = React.useRef<{ validate: () => boolean; getData: () => any }>(null);
-  const qualificationsRef = React.useRef<ApplicantQuestionsRef>(null);
-  const questionsRef = React.useRef<{ validate: () => boolean }>(null);
+  const qualificationsRef = React.useRef<QualificationsRef>(null);
+  const questionsRef = React.useRef<QuestionsRef>(null);
+
+  const getQuestionsData = async () => {
+    const response = await getQuestions(jobId as string, applicantId as string);
+    if (response) {
+      setQuestions(response);
+    }
+  };
+
+  useEffect(() => {
+    getQuestionsData();
+  }, []);
 
   // Handle validation for current step
   const handleNextStep = async () => {
@@ -37,17 +54,18 @@ export default function Apply() {
     switch (currentStep) {
       case 1:
         if (contactInfoRef.current) {
+          setCurrentStep(currentStep + 1);
           isValid = contactInfoRef.current.validate();
           if (isValid) {
-            const response = await applicantContactInfo({ ...(stepData.contactInfo as any), job_id: jobId })
+            const response = await applicantContactInfo({ ...(stepData.contactInfo as any), job_id: jobId, applicant_id: applicantId })
             if (response.data.status) {
-              setCurrentStep(currentStep + 1);
             }
           }
         }
         break;
       case 2:
         if (resumeRef.current) {
+          setCurrentStep(currentStep + 1);
           isValid = resumeRef.current.validate();
           if (!isValid) {
             customToast(
@@ -58,9 +76,8 @@ export default function Apply() {
           }
           else {
             const resumeData = resumeRef.current.getData();
-            const response = await applicantResume({ cv_media_id: resumeData.resumeID, cover_media_id: resumeData.otherDocumentsID, job_id: jobId })
+            const response = await applicantResume({ cv_media_id: resumeData.resumeID, cover_media_id: resumeData.otherDocumentsID, job_id: jobId, applicant_id: applicantId })
             if (response.data.status) {
-              setCurrentStep(currentStep + 1);
             }
           }
         }
@@ -68,9 +85,14 @@ export default function Apply() {
       case 3:
         if (qualificationsRef.current) {
           try {
-            await qualificationsRef.current?.saveQualifications();
+            setLoading(true);
             setCurrentStep(currentStep + 1);
+            const response = await qualificationsRef.current.saveQualifications();
+            if (response.data.status) {
+            }
+            setLoading(false);
           } catch (error) {
+            setLoading(false);
             customToast(
               'Please fill all required fields',
               'Missing details',
@@ -82,7 +104,20 @@ export default function Apply() {
         break;
       case 4:
         if (questionsRef.current) {
-          isValid = questionsRef.current.validate();
+          try {
+            setLoading(true);
+            await questionsRef.current?.saveAnswers();
+            setLoading(false);
+            setCurrentStep(currentStep + 1);
+          } catch (error) {
+            setLoading(false);
+            customToast(
+              'Please fill all required fields',
+              'Missing details',
+              'error'
+            );
+            return;
+          }
         }
         break;
       default:
@@ -137,13 +172,14 @@ export default function Apply() {
                 />
               )}
               {currentStep === 2 && <Resume ref={resumeRef} onValidationChange={(isValid, data) => handleStepDataChange('resume', data)} />}
-              {currentStep === 3 && <Qualifications ref={qualificationsRef} />}
-              {currentStep === 4 && <Questions ref={questionsRef} />}
+              {currentStep === 3 && <Qualifications ref={qualificationsRef} jobId={jobId} applicantId={applicantId} />}
+              {currentStep === 4 && <Questions ref={questionsRef} jobId={jobId} applicantId={applicantId} />}
               {currentStep === 5 && <Review />}
             </div>
             <div className="px-[40px] pt-[28px] pb-[32px] border-t border-[#e9e9e9] flex gap-[16px] sm:flex-row flex-col">
               {currentStep !== 1 && (
                 <Button
+                  disabled={loading}
                   variant="outline"
                   className="h-[48px] w-full  sm:order-1 order-2"
                   onClick={() => setCurrentStep(currentStep - 1)}
@@ -152,13 +188,13 @@ export default function Apply() {
                 </Button>
               )}
               {currentStep !== 5 && (
-                <Button className="h-[48px] w-full sm:order-2 order-1" onClick={handleNextStep}>
-                  Save & Continue{' '}
+                <Button disabled={loading} className="h-[48px] w-full sm:order-2 order-1" onClick={handleNextStep}>
+                  {loading ? 'Saving...' : 'Save & Continue'}
                 </Button>
               )}
               {currentStep === 5 && (
-                <Button className="h-[48px] w-full sm:order-2 order-1" onClick={() => setCurrentStep(currentStep + 1)}>
-                  Submit Application
+                <Button disabled={loading} className="h-[48px] w-full sm:order-2 order-1" onClick={() => setCurrentStep(currentStep + 1)}>
+                  {loading ? 'Submitting...' : 'Submit Application'}
                 </Button>
               )}
             </div>

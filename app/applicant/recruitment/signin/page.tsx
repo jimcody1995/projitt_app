@@ -49,9 +49,8 @@ export default function SignIn() {
       }
       setIsSubmitting(true);
       const response = await sendApplicantOTP({ email });
-      console.log(response);
-
       if (response.status) {
+        customToast('Success', 'Code sent successfully', 'success');
         setSentStatus(true);
       }
       setIsSubmitting(false);
@@ -77,12 +76,15 @@ export default function SignIn() {
       }
       setIsSubmitting(true);
       const response = await verifyApplicantOTP({ email, otp: code });
-      console.log(response);
-
       if (response.token) {
-        axios.defaults.headers.common["Authorization"] = `Bearer ${response.token}`;
-        setSession({ token: response.token, authenticated: true });
-        router.push('/applicant/recruitment/apply');
+
+        axios.defaults.headers.common["Authorization"] = `Bearer ${response.token.applicant_token}`;
+        setSession({ token: response.token.applicant_token, authenticated: true });
+        console.log("asdfasdf");
+        const params = new URLSearchParams();
+        params.set('jobId', '1');
+        params.set('applicantId', response.token.id);
+        router.replace(`/applicant/recruitment/apply?${params.toString()}`);
       }
       setIsSubmitting(false);
     } catch (error: any) {
@@ -95,7 +97,6 @@ export default function SignIn() {
   const handleResendCode = async () => {
     try {
       const response = await sendApplicantOTP({ email });
-      console.log(response);
       if (response.status) {
         customToast('Success', 'Code resent successfully', 'success');
       }
