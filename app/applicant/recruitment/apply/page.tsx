@@ -1,5 +1,5 @@
 'use client';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Loader } from 'lucide-react';
 import React, { useState } from 'react';
 import Stepper from './components/steper';
 import { Button } from '@/components/ui/button';
@@ -54,31 +54,55 @@ export default function Apply() {
     switch (currentStep) {
       case 1:
         if (contactInfoRef.current) {
-          isValid = contactInfoRef.current.validate();
-          if (isValid) {
-            const response = await applicantContactInfo({ ...(stepData.contactInfo as any), job_id: jobId, applicant_id: applicantId })
-            if (response.data.status) {
-              setCurrentStep(currentStep + 1);
+          try {
+            setLoading(true);
+            isValid = contactInfoRef.current.validate();
+            if (isValid) {
+              const response = await applicantContactInfo({ ...(stepData.contactInfo as any), job_id: jobId, applicant_id: applicantId })
+              if (response.data.status) {
+                setCurrentStep(currentStep + 1);
+              }
             }
-          }
-        }
-        break;
-      case 2:
-        if (resumeRef.current) {
-          isValid = resumeRef.current.validate();
-          if (!isValid) {
+          } catch (error) {
             customToast(
               'Please fill all required fields',
               'Missing details',
               'error'
             );
+            return;
+          } finally {
+            setLoading(false);
           }
-          else {
-            const resumeData = resumeRef.current.getData();
-            const response = await applicantResume({ cv_media_id: resumeData.resumeID, cover_media_id: resumeData.otherDocumentsID, job_id: jobId, applicant_id: applicantId })
-            if (response.data.status) {
-              setCurrentStep(currentStep + 1);
+        }
+        break;
+      case 2:
+        if (resumeRef.current) {
+          try {
+            setLoading(true);
+            isValid = resumeRef.current.validate();
+            if (!isValid) {
+              customToast(
+                'Please fill all required fields',
+                'Missing details',
+                'error'
+              );
             }
+            else {
+              const resumeData = resumeRef.current.getData();
+              const response = await applicantResume({ cv_media_id: resumeData.resumeID, cover_media_id: resumeData.otherDocumentsID, job_id: jobId, applicant_id: applicantId })
+              if (response.data.status) {
+                setCurrentStep(currentStep + 1);
+              }
+            }
+          } catch (error) {
+            customToast(
+              'Please fill all required fields',
+              'Missing details',
+              'error'
+            );
+            return;
+          } finally {
+            setLoading(false);
           }
         }
         break;
@@ -157,14 +181,18 @@ export default function Apply() {
               <Stepper currentStep={currentStep} />
             </div>
           </div>
-          <div className="flex-1 ">
+          <div className="flex-1 relative">
+            {loading && <div className="absolute top-0 left-0 z-[3] w-full h-full flex justify-center items-center bg-[#bebebe22]">
+              <Loader className="size-[30px] spinner animate-spin z-[4]" />
+            </div>}
             <div className="pl-[40px] pt-[36px] pb-[21px] border-b border-[#e9e9e9] md:hidden block">
               <p className="text-[18px]/[30px] text-[#353535]">Senior Data Analyst</p>
               <p className="text-[14px]/[22px] text-[#8f8f8f]">
                 Big and Small Enterprise Ltd ~ USA
               </p>
             </div>
-            <div className="pt-[33px] px-[40px] pb-[19px]">
+            <div className="pt-[33px] px-[40px] pb-[19px] relative">
+
               {currentStep === 1 && (
                 <ContactInfo
                   ref={contactInfoRef}
