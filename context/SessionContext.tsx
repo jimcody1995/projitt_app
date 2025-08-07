@@ -1,7 +1,8 @@
 'use client';
 
 import axios from "axios";
-import { useRouter, usePathname } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+
 import { createContext, useContext, useState, ReactNode, useLayoutEffect, JSX } from "react";
 
 /**
@@ -38,26 +39,26 @@ export const SessionProvider = ({ children }: { children: ReactNode }): JSX.Elem
     const [session, setSessionState] = useState<Session>({ token: null, authenticated: false });
     const [loading, setLoading] = useState(true);
     const router = useRouter();
-    const path = usePathname();
-
+    const params = useParams();
     useLayoutEffect(() => {
         const loadSession = async () => {
             setLoading(true);
             const stored = localStorage.getItem("session");
-
+            const applicantId = localStorage.getItem("applicantId");
             if (stored) {
                 axios.defaults.headers.common["Authorization"] = `Bearer ${stored}`;
                 setSessionState({ token: stored, authenticated: true });
                 setTimeout(() => setLoading(false), 1000);
-                if (path === '/applicant/recruitment/signin') {
-                    router.replace('/applicant/recruitment/apply');
+                const jobId = params.jobId;
+                if (jobId && applicantId) {
+                    router.replace(`/applicant/recruitment/apply?jobId=${jobId}&applicantId=${applicantId}`);
+                } else {
+                    router.replace(`/applicant/recruitment/apply?jobId=1&applicantId=${applicantId}`);
                 }
             } else {
                 setSessionState({ token: null, authenticated: false });
                 setTimeout(() => setLoading(false), 1000);
-                if (path === '/applicant/recruitment/apply') {
-                    router.replace('/applicant/recruitment/signin');
-                }
+                router.replace('/applicant/recruitment/signin');
             }
         }
         loadSession();

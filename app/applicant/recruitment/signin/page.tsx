@@ -80,7 +80,7 @@ export default function SignIn() {
 
         axios.defaults.headers.common["Authorization"] = `Bearer ${response.token.applicant_token}`;
         setSession({ token: response.token.applicant_token, authenticated: true });
-        console.log("asdfasdf");
+        localStorage.setItem("applicantId", response.token.id);
         const params = new URLSearchParams();
         params.set('jobId', '1');
         params.set('applicantId', response.token.id);

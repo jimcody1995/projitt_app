@@ -28,7 +28,7 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean }, ContactInfoPro
       state: '',
       zip_code: '',
       country: '',
-      contact_code: '',
+      contact_code: '+1',
       contact_no: '',
     });
 
@@ -40,7 +40,7 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean }, ContactInfoPro
       state: '',
       zip_code: '',
       country: '',
-      contact_code: '',
+      contact_code: '+1',
       contact_no: '',
     });
 
@@ -265,8 +265,8 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean }, ContactInfoPro
           <div className="flex sm:flex-row flex-col gap-[16px] w-full mt-[12px]">
             <div className="sm:w-[113px] w-full">
               <Select
-                defaultValue="US"
                 indicatorVisibility={false}
+                value={code}
                 onValueChange={(value) => {
                   const code = phoneNumber.find((item) => item.key === value)?.code;
                   if (!code) return;

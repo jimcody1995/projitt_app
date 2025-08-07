@@ -54,18 +54,17 @@ export default function Apply() {
     switch (currentStep) {
       case 1:
         if (contactInfoRef.current) {
-          setCurrentStep(currentStep + 1);
           isValid = contactInfoRef.current.validate();
           if (isValid) {
             const response = await applicantContactInfo({ ...(stepData.contactInfo as any), job_id: jobId, applicant_id: applicantId })
             if (response.data.status) {
+              setCurrentStep(currentStep + 1);
             }
           }
         }
         break;
       case 2:
         if (resumeRef.current) {
-          setCurrentStep(currentStep + 1);
           isValid = resumeRef.current.validate();
           if (!isValid) {
             customToast(
@@ -78,6 +77,7 @@ export default function Apply() {
             const resumeData = resumeRef.current.getData();
             const response = await applicantResume({ cv_media_id: resumeData.resumeID, cover_media_id: resumeData.otherDocumentsID, job_id: jobId, applicant_id: applicantId })
             if (response.data.status) {
+              setCurrentStep(currentStep + 1);
             }
           }
         }
@@ -86,9 +86,9 @@ export default function Apply() {
         if (qualificationsRef.current) {
           try {
             setLoading(true);
-            setCurrentStep(currentStep + 1);
             const response = await qualificationsRef.current.saveQualifications();
             if (response.data.status) {
+              setCurrentStep(currentStep + 1);
             }
             setLoading(false);
           } catch (error) {
