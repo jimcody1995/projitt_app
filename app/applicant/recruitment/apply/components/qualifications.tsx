@@ -325,9 +325,28 @@ const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(functi
                   <SelectValue placeholder="Select Degree" />
                 </SelectTrigger>
                 <SelectContent data-testid={`education-degree-select-content-${index}`}>
-                  <SelectItem value="1" data-testid={`education-degree-select-item-1-${index}`}>Qualification 1</SelectItem>
-                  <SelectItem value="2" data-testid={`education-degree-select-item-2-${index}`}>Qualification 2</SelectItem>
-                  <SelectItem value="3" data-testid={`education-degree-select-item-3-${index}`}>Qualification 3</SelectItem>
+                  <SelectItem value="1" data-testid={`education-degree-select-item-${index}`}>High School Diploma / GED</SelectItem>
+                  <SelectItem value="2" data-testid={`education-degree-select-item-${index}`}>Associate of Arts (AA)</SelectItem>
+                  <SelectItem value="3" data-testid={`education-degree-select-item-${index}`}>Associate of Science (AS)</SelectItem>
+                  <SelectItem value="4" data-testid={`education-degree-select-item-${index}`}>Bachelor of Arts (BA)</SelectItem>
+                  <SelectItem value="5" data-testid={`education-degree-select-item-${index}`}>Bachelor of Science (BS)</SelectItem>
+                  <SelectItem value="6" data-testid={`education-degree-select-item-${index}`}>Bachelor of Fine Arts (BFA)</SelectItem>
+                  <SelectItem value="7" data-testid={`education-degree-select-item-${index}`}>Bachelor of Business Administration (BBA)</SelectItem>
+                  <SelectItem value="8" data-testid={`education-degree-select-item-${index}`}>Bachelor of Engineering (BE)</SelectItem>
+                  <SelectItem value="9" data-testid={`education-degree-select-item-${index}`}>Bachelor of Education (BEd)</SelectItem>
+                  <SelectItem value="10" data-testid={`education-degree-select-item-${index}`}>Bachelor of Laws (LLB)</SelectItem>
+                  <SelectItem value="11" data-testid={`education-degree-select-item-${index}`}>Bachelor of Computer Science (BCS)</SelectItem>
+                  <SelectItem value="12" data-testid={`education-degree-select-item-${index}`}>Master of Arts (MA)</SelectItem>
+                  <SelectItem value="13" data-testid={`education-degree-select-item-${index}`}>Master of Science (MS / MSc)</SelectItem>
+                  <SelectItem value="14" data-testid={`education-degree-select-item-${index}`}>Master of Business Administration (MBA)</SelectItem>
+                  <SelectItem value="15" data-testid={`education-degree-select-item-${index}`}>Master of Fine Arts (MFA)</SelectItem>
+                  <SelectItem value="16" data-testid={`education-degree-select-item-${index}`}>Master of Education (MEd)</SelectItem>
+                  <SelectItem value="17" data-testid={`education-degree-select-item-${index}`}>Master of Laws (LLM)</SelectItem>
+                  <SelectItem value="18" data-testid={`education-degree-select-item-${index}`}>Doctor of Philosophy (PhD)</SelectItem>
+                  <SelectItem value="19" data-testid={`education-degree-select-item-${index}`}>Doctor of Education (EdD)</SelectItem>
+                  <SelectItem value="20" data-testid={`education-degree-select-item-${index}`}>Doctor of Business Administration (DBA)</SelectItem>
+                  <SelectItem value="21" data-testid={`education-degree-select-item-${index}`}>Doctor of Medicine (MD)</SelectItem>
+                  <SelectItem value="22" data-testid={`education-degree-select-item-${index}`}>Juris Doctor (JD)</SelectItem>
                 </SelectContent>
               </Select>
               <Input
