@@ -43,23 +43,23 @@ export const SessionProvider = ({ children }: { children: ReactNode }): JSX.Elem
     useLayoutEffect(() => {
         const loadSession = async () => {
             setLoading(true);
-            const stored = localStorage.getItem("session");
-            const applicantId = localStorage.getItem("applicantId");
-            if (stored) {
-                axios.defaults.headers.common["Authorization"] = `Bearer ${stored}`;
-                setSessionState({ token: stored, authenticated: true });
-                setTimeout(() => setLoading(false), 1000);
-                const jobId = params.jobId;
-                if (jobId && applicantId) {
-                    router.replace(`/applicant/recruitment/apply?jobId=${jobId}&applicantId=${applicantId}`);
-                } else {
-                    router.replace(`/applicant/recruitment/apply?jobId=1&applicantId=${applicantId}`);
-                }
-            } else {
-                setSessionState({ token: null, authenticated: false });
-                setTimeout(() => setLoading(false), 1000);
-                router.replace('/applicant/recruitment/signin');
-            }
+            // const stored = localStorage.getItem("session");
+            // const applicantId = localStorage.getItem("applicantId");
+            // if (stored) {
+            //     axios.defaults.headers.common["Authorization"] = `Bearer ${stored}`;
+            //     setSessionState({ token: stored, authenticated: true });
+            //     setTimeout(() => setLoading(false), 1000);
+            //     const jobId = params.jobId;
+            //     if (jobId && applicantId) {
+            //         router.replace(`/applicant/recruitment/apply?jobId=${jobId}&applicantId=${applicantId}`);
+            //     } else {
+            //         router.replace(`/applicant/recruitment/apply?jobId=1&applicantId=${applicantId}`);
+            //     }
+            // } else {
+            setSessionState({ token: null, authenticated: false });
+            setTimeout(() => setLoading(false), 1000);
+            router.replace('/applicant/recruitment/signin');
+            // }
         }
         loadSession();
         // eslint-disable-next-line react-hooks/exhaustive-deps
