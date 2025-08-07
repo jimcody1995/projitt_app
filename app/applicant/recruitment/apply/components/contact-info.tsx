@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -8,10 +9,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import React from 'react';
 import { useBasic } from '@/context/BasicContext';
 import phoneNumber from '@/constants/phoneNumber.json';
 
+/**
+ * @description
+ * ContactInfo is a form component for collecting and validating user contact information.
+ * It includes fields for first name, last name, address, city, state, zip code, country, and phone number.
+ * The component uses local state to manage form data and validation errors, and exposes a validation function to a parent component via a forwarded ref.
+ * It provides unique data-testid locators for UI elements to aid in test automation.
+ */
 interface ContactInfoProps {
   onValidationChange?: (isValid: boolean, data: any) => void;
 }
@@ -44,7 +51,14 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean }, ContactInfoPro
       contact_no: '',
     });
 
-    // Validation functions
+    /**
+     * @description
+     * This function validates a single form field based on its name and value.
+     * It returns an error message if the validation fails, otherwise returns an empty string.
+     * @param {string} name - The name of the field to validate.
+     * @param {string} value - The value of the field.
+     * @returns {string} - The error message or an empty string.
+     */
     const validateField = (name: string, value: string) => {
       switch (name) {
         case 'first_name':
@@ -91,13 +105,25 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean }, ContactInfoPro
       }
     };
 
-    // Handle input changes
+    /**
+     * @description
+     * This function handles changes to the input fields.
+     * It updates the formData state and clears any existing errors for the changed field.
+     * @param {string} name - The name of the field being changed.
+     * @param {string} value - The new value of the field.
+     */
     const handleInputChange = (name: string, value: string) => {
       setFormData(prev => ({ ...prev, [name]: value }));
       setErrors(prev => ({ ...prev, [name]: '' }));
     };
 
-    // Validate all fields
+    /**
+     * @description
+     * This function validates all form fields and updates the errors state.
+     * It returns true if all fields are valid, otherwise false.
+     * It also calls the `onValidationChange` prop to notify the parent component of the validation status.
+     * @returns {boolean} - The overall validation status of the form.
+     */
     const validateForm = () => {
       const newErrors = {
         first_name: validateField('first_name', formData.first_name),
@@ -122,9 +148,9 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean }, ContactInfoPro
       return isValid;
     };
 
-    // Expose validation function to parent
+    // Expose validation function to parent component via a forwarded ref.
     React.useImperativeHandle(ref, () => ({
-      validate: validateForm
+      validate: validateForm,
     }));
 
     return (
@@ -142,6 +168,8 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean }, ContactInfoPro
                 const error = validateField('first_name', formData.first_name);
                 setErrors(prev => ({ ...prev, first_name: error }));
               }}
+              data-testid="contact-first-name-input"
+              id="contact-first-name-input"
             />
             {errors.first_name && (
               <p className="text-red-500 text-sm mt-1">{errors.first_name}</p>
@@ -157,6 +185,8 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean }, ContactInfoPro
                 const error = validateField('last_name', formData.last_name);
                 setErrors(prev => ({ ...prev, last_name: error }));
               }}
+              data-testid="contact-last-name-input"
+              id="contact-last-name-input"
             />
             {errors.last_name && (
               <p className="text-red-500 text-sm mt-1">{errors.last_name}</p>
@@ -169,6 +199,8 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean }, ContactInfoPro
             className={`mt-[12px] h-[48px]`}
             value=""
             disabled
+            data-testid="contact-email-input"
+            id="contact-email-input"
           />
         </div>
         <div className="w-full mt-[20px]">
@@ -181,6 +213,8 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean }, ContactInfoPro
               const error = validateField('address', formData.address);
               setErrors(prev => ({ ...prev, address: error }));
             }}
+            data-testid="contact-address-input"
+            id="contact-address-input"
           />
           {errors.address && (
             <p className="text-red-500 text-sm mt-1">{errors.address}</p>
@@ -197,6 +231,8 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean }, ContactInfoPro
                 const error = validateField('city', formData.city);
                 setErrors(prev => ({ ...prev, city: error }));
               }}
+              data-testid="contact-city-input"
+              id="contact-city-input"
             />
             {errors.city && (
               <p className="text-red-500 text-sm mt-1">{errors.city}</p>
@@ -212,6 +248,8 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean }, ContactInfoPro
                 const error = validateField('state', formData.state);
                 setErrors(prev => ({ ...prev, state: error }));
               }}
+              data-testid="contact-state-input"
+              id="contact-state-input"
             />
             {errors.state && (
               <p className="text-red-500 text-sm mt-1">{errors.state}</p>
@@ -230,6 +268,8 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean }, ContactInfoPro
                 setErrors(prev => ({ ...prev, zip_code: error }));
               }}
               placeholder="12345 or 12345-6789"
+              data-testid="contact-zip-code-input"
+              id="contact-zip-code-input"
             />
             {errors.zip_code && (
               <p className="text-red-500 text-sm mt-1">{errors.zip_code}</p>
@@ -244,12 +284,21 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean }, ContactInfoPro
                 setErrors(prev => ({ ...prev, country: '' }));
               }}
             >
-              <SelectTrigger className={`h-[48px] mt-[12px] ${errors.country ? 'border-red-500' : ''}`}>
-                <SelectValue placeholder="Select Country" />
+              <SelectTrigger
+                className={`h-[48px] mt-[12px] ${errors.country ? 'border-red-500' : ''}`}
+                data-testid="contact-country-select-trigger"
+                id="contact-country-select-trigger"
+              >
+                <SelectValue placeholder="Select Country" data-testid="contact-country-select-value" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent data-testid="contact-country-select-content">
                 {(country || [])?.map((country: any) => (
-                  <SelectItem key={country.id} value={country.name}>
+                  <SelectItem
+                    key={country.id}
+                    value={country.name}
+                    data-testid={`contact-country-select-item-${country.id}`}
+                    id={`contact-country-select-item-${country.id}`}
+                  >
                     {country.name}
                   </SelectItem>
                 ))}
@@ -276,27 +325,20 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean }, ContactInfoPro
               >
                 <SelectTrigger
                   className="h-[48px]"
-                  id="signup-phone-country-trigger"
-                  data-testid="signup-phone-country-trigger"
+                  id="contact-phone-country-trigger"
+                  data-testid="contact-phone-country-trigger"
                 >
-                  <SelectValue
-                    placeholder="Select a country"
-                    id="signup-phone-country-value"
-                    data-testid="signup-phone-country-value"
-                  />
+                  <SelectValue placeholder="Code" />
                 </SelectTrigger>
-                <SelectContent
-                  id="signup-phone-country-content"
-                  data-testid="signup-phone-country-content"
-                >
+                <SelectContent data-testid="contact-phone-country-content">
                   {phoneNumber.map((item) => (
                     <SelectItem
                       key={item.key}
                       value={item.key}
-                      id={`signup-phone-country-${item.key}`}
-                      data-testid={`signup-phone-country-${item.key}`}
+                      data-testid={`contact-phone-country-item-${item.key}`}
+                      id={`contact-phone-country-item-${item.key}`}
                     >
-                      {item.value}
+                      {item.key} +{item.code}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -307,8 +349,8 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean }, ContactInfoPro
                 placeholder={`+${code}(555)000-0000`}
                 type="text"
                 className={`h-[48px] ${errors.contact_no ? 'border-red-500' : ''}`}
-                id="signup-phone-input"
-                data-testid="signup-phone-input"
+                id="contact-phone-input"
+                data-testid="contact-phone-input"
                 value={formData.contact_no}
                 onChange={(e) => handleInputChange('contact_no', e.target.value)}
                 onBlur={() => {
@@ -324,7 +366,8 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean }, ContactInfoPro
         </div>
       </div>
     );
-  });
+  }
+);
 
 ContactInfo.displayName = 'ContactInfo';
 

@@ -16,6 +16,11 @@ import { useEffect } from 'react';
 import { getQuestions } from '@/api/applicant';
 import { QuestionsRef } from './components/questions';
 
+/**
+ * Apply component manages the multi-step job application process.
+ * It controls step navigation, validation, and data submission.
+ * Renders different form components based on the current step.
+ */
 export default function Apply() {
   const searchParams = useSearchParams();
   const jobId = searchParams.get('jobId');
@@ -34,6 +39,11 @@ export default function Apply() {
   const resumeRef = React.useRef<{ validate: () => boolean; getData: () => any }>(null);
   const qualificationsRef = React.useRef<QualificationsRef>(null);
   const questionsRef = React.useRef<QuestionsRef>(null);
+
+  /**
+   * Validates the current step and attempts to submit its data.
+   * On success, advances to the next step.
+   */
 
   const getQuestionsData = async () => {
     const response = await getQuestions(jobId as string, applicantId as string);
@@ -154,7 +164,11 @@ export default function Apply() {
     }
   };
 
-  // Handle data changes from step components
+  /**
+   * Updates stored step data when changes occur in child components.
+   * @param step - The step identifier (e.g., 'contactInfo', 'resume')
+   * @param data - The new data from the step component
+   */
   const handleStepDataChange = (step: string, data: any) => {
     setStepData(prev => ({ ...prev, [step]: data }));
   };
@@ -163,17 +177,18 @@ export default function Apply() {
     <div className="flex flex-col h-full">
       <div className="pb-[30px] flex justify-between pl-[84px] pr-[100px] border-b border-[#e9e9e9] sm:flex-row flex-col items-center gap-[10px]">
         <img src="/images/zaidLLC.png" alt="logo" className="h-[32px]" />
-        <button className="flex gap-[10px] text-[#0D978B] cursor-pointer text-[14px]/[20px]">
+        <button className="flex gap-[10px] text-[#0D978B] cursor-pointer text-[14px]/[20px]" id="go-to-dashboard-link"
+          data-testid="go-to-dashboard-link">
           <p>Go to Dashboard</p>
           <ArrowRight className="size-[20px]" />
         </button>
       </div>
       {currentStep !== 6 && (
         <div className="lg:w-[865px] w-full flex bg-white mx-auto mt-[44px]">
-          <div className="w-[321px] border-r border-[#e9e9e9] md:block hidden">
+          <div className="w-[321px] border-r border-[#e9e9e9] md:block hidden" id="sidebar" data-testid="sidebar">
             <div className="pl-[40px] pt-[36px] pb-[21px] border-b border-[#e9e9e9] ">
-              <p className="text-[18px]/[30px] text-[#353535]">Senior Data Analyst</p>
-              <p className="text-[14px]/[22px] text-[#8f8f8f]">
+              <p className="text-[18px]/[30px] text-[#353535]" id="job-title" data-testid="job-title">Senior Data Analyst</p>
+              <p className="text-[14px]/[22px] text-[#8f8f8f]" id="company-location" data-testid="company-location">
                 Big and Small Enterprise Ltd ~ USA
               </p>
             </div>
@@ -185,7 +200,7 @@ export default function Apply() {
             {loading && <div className="absolute top-0 left-0 z-[3] w-full h-full flex justify-center items-center bg-[#bebebe22]">
               <Loader className="size-[30px] spinner animate-spin z-[4]" />
             </div>}
-            <div className="pl-[40px] pt-[36px] pb-[21px] border-b border-[#e9e9e9] md:hidden block">
+            <div className="pl-[40px] pt-[36px] pb-[21px] border-b border-[#e9e9e9] md:hidden block" id="mobile-header" data-testid="mobile-header">
               <p className="text-[18px]/[30px] text-[#353535]">Senior Data Analyst</p>
               <p className="text-[14px]/[22px] text-[#8f8f8f]">
                 Big and Small Enterprise Ltd ~ USA
@@ -197,6 +212,8 @@ export default function Apply() {
                 <ContactInfo
                   ref={contactInfoRef}
                   onValidationChange={(isValid, data) => handleStepDataChange('contactInfo', data)}
+                  id="contact-info-step"
+                  data-testid="contact-info-step"
                 />
               )}
               {currentStep === 2 && <Resume ref={resumeRef} onValidationChange={(isValid, data) => handleStepDataChange('resume', data)} />}
@@ -211,17 +228,23 @@ export default function Apply() {
                   variant="outline"
                   className="h-[48px] w-full  sm:order-1 order-2"
                   onClick={() => setCurrentStep(currentStep - 1)}
+                  id="back-button"
+                  data-testid="back-button"
                 >
                   Back
                 </Button>
               )}
               {currentStep !== 5 && (
-                <Button disabled={loading} className="h-[48px] w-full sm:order-2 order-1" onClick={handleNextStep}>
+                <Button disabled={loading} className="h-[48px] w-full sm:order-2 order-1" onClick={handleNextStep}
+                  id="save-continue-button"
+                  data-testid="save-continue-button">
                   {loading ? 'Saving...' : 'Save & Continue'}
                 </Button>
               )}
               {currentStep === 5 && (
-                <Button disabled={loading} className="h-[48px] w-full sm:order-2 order-1" onClick={() => setCurrentStep(currentStep + 1)}>
+                <Button disabled={loading} className="h-[48px] w-full sm:order-2 order-1" onClick={() => setCurrentStep(currentStep + 1)}
+                  id="submit-application-button"
+                  data-testid="submit-application-button">
                   {loading ? 'Submitting...' : 'Submit Application'}
                 </Button>
               )}
@@ -280,7 +303,7 @@ export default function Apply() {
         </div>
       )}
       <div className="flex justify-center mt-[51px] pb-[20px]">
-        <img src="/images/poweredBy.png" alt="logo" className="h-[28px]" />
+        <img src="/images/poweredBy.png" alt="logo" className="h-[28px]" id="powered-by-logo" data-testid="powered-by-logo" />
       </div>
     </div>
   );

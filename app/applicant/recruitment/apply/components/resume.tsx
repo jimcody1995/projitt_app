@@ -3,6 +3,12 @@
 import React, { forwardRef, useImperativeHandle } from 'react';
 import FileDropUpload from './file-drop-upload';
 
+/**
+ * @description
+ * This component handles the uploading of a resume and other documents.
+ * It validates that a resume is provided and both files, if present, are in PDF format.
+ * The component exposes `validate` and `getData` functions to its parent via a forwarded ref, allowing the parent to trigger validation and retrieve the uploaded files' data.
+ */
 interface ResumeData {
   resume: File | null;
   otherDocuments: File | null;
@@ -10,6 +16,10 @@ interface ResumeData {
   otherDocumentsID: string | null;
 }
 
+/**
+ * @description
+ * A ref interface for the Resume component, exposing validation and data retrieval methods to the parent component.
+ */
 interface ResumeRef {
   validate: () => boolean;
   getData: () => ResumeData;
@@ -23,6 +33,14 @@ const Resume = forwardRef<ResumeRef, { onValidationChange: (isValid: boolean, da
   const [resumeError, setResumeError] = React.useState<boolean>(false);
   const [otherDocumentsError, setOtherDocumentsError] = React.useState<boolean>(false);
 
+  /**
+   * @description
+   * This function validates the uploaded resume and other documents.
+   * It checks if a resume file has been uploaded and that it is a PDF.
+   * It also checks if any other documents uploaded are PDFs.
+   * It updates the error states and notifies the parent component of the validation status via the `onValidationChange` prop.
+   * @returns {boolean} - Returns `true` if validation passes, otherwise `false`.
+   */
   const validate = (): boolean => {
     let isValid = true;
 
@@ -38,10 +56,7 @@ const Resume = forwardRef<ResumeRef, { onValidationChange: (isValid: boolean, da
     }
 
     // Check if other document is PDF (if provided)
-    if (!otherDocuments) {
-      setOtherDocumentsError(true);
-      isValid = false;
-    } else if (otherDocuments && otherDocuments.type !== 'application/pdf') {
+    if (otherDocuments && otherDocuments.type !== 'application/pdf') {
       setOtherDocumentsError(true);
       isValid = false;
     } else {
@@ -53,6 +68,11 @@ const Resume = forwardRef<ResumeRef, { onValidationChange: (isValid: boolean, da
     return isValid;
   };
 
+  /**
+   * @description
+   * Retrieves the current state of the uploaded files and their IDs.
+   * @returns {ResumeData} - An object containing the resume file, other document file, and their corresponding IDs.
+   */
   const getData = (): ResumeData => ({
     resume,
     otherDocuments,
@@ -60,13 +80,18 @@ const Resume = forwardRef<ResumeRef, { onValidationChange: (isValid: boolean, da
     otherDocumentsID,
   });
 
-  // Expose validation method to parent component
+  // Expose validation and data retrieval methods to the parent component
   useImperativeHandle(ref, () => ({
     validate,
     getData,
   }));
 
-  // Clear error when file is selected
+  /**
+   * @description
+   * A memoized callback function to handle changes to the resume file.
+   * It updates the `resume` state and clears the `resumeError` if a file is provided.
+   * @param {File | null | ((prev: File | null) => File | null)} file - The new resume file or a state-updating function.
+   */
   const handleResumeChange = React.useCallback((file: File | null | ((prev: File | null) => File | null)) => {
     if (typeof file === 'function') {
       setResume(file);
@@ -78,7 +103,12 @@ const Resume = forwardRef<ResumeRef, { onValidationChange: (isValid: boolean, da
     }
   }, []);
 
-  // Clear error when other document is selected
+  /**
+   * @description
+   * A memoized callback function to handle changes to the other documents file.
+   * It updates the `otherDocuments` state and clears the `otherDocumentsError` if a file is provided.
+   * @param {File | null | ((prev: File | null) => File | null)} file - The new other document file or a state-updating function.
+   */
   const handleOtherDocumentsChange = React.useCallback((file: File | null | ((prev: File | null) => File | null)) => {
     if (typeof file === 'function') {
       setOtherDocuments(file);
@@ -101,6 +131,7 @@ const Resume = forwardRef<ResumeRef, { onValidationChange: (isValid: boolean, da
           setID={setResumeID}
           file={resume}
           hasError={resumeError}
+          data-testid="resume-upload"
         />
         <FileDropUpload
           label="Other document"
@@ -108,6 +139,7 @@ const Resume = forwardRef<ResumeRef, { onValidationChange: (isValid: boolean, da
           setID={setOtherDocumentsID}
           file={otherDocuments}
           hasError={otherDocumentsError}
+          data-testid="other-documents-upload"
         />
       </div>
     </div>
