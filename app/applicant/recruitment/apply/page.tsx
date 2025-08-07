@@ -53,6 +53,7 @@ export default function Apply() {
     // Validate current step based on step number
     switch (currentStep) {
       case 1:
+        setCurrentStep(currentStep + 1);
         if (contactInfoRef.current) {
           try {
             setLoading(true);
@@ -60,7 +61,6 @@ export default function Apply() {
             if (isValid) {
               const response = await applicantContactInfo({ ...(stepData.contactInfo as any), job_id: jobId, applicant_id: applicantId })
               if (response.data.status) {
-                setCurrentStep(currentStep + 1);
               }
             }
           } catch (error) {
@@ -76,6 +76,7 @@ export default function Apply() {
         }
         break;
       case 2:
+        setCurrentStep(currentStep + 1);
         if (resumeRef.current) {
           try {
             setLoading(true);
@@ -91,7 +92,6 @@ export default function Apply() {
               const resumeData = resumeRef.current.getData();
               const response = await applicantResume({ cv_media_id: resumeData.resumeID, cover_media_id: resumeData.otherDocumentsID, job_id: jobId, applicant_id: applicantId })
               if (response.data.status) {
-                setCurrentStep(currentStep + 1);
               }
             }
           } catch (error) {

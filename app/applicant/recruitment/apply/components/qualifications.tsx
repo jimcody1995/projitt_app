@@ -22,6 +22,7 @@ import { useBasic } from '@/context/BasicContext';
 import TagInput from '@/components/ui/tag-input';
 import { applicantExperienceAdd, applicantCertificateAdd, applicantEducationAdd, editApplicantInfo } from '@/api/applicant';
 export interface QualificationsRef {
+  saveQualifications: () => Promise<unknown>;
 }
 
 interface WorkExperience {
@@ -56,14 +57,85 @@ const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(functi
   const [workExperience, setWorkExperience] = useState<WorkExperience[]>([]);
   const [education, setEducation] = useState<Education[]>([]);
   const [certifications, setCertifications] = useState<Certifications[]>([]);
-  const [otherLinks, setOtherLinks] = useState<any>([]);
-  const [tags, setTags] = useState<any>([]);
+  const [otherLinks, setOtherLinks] = useState<Array<{ title: string; link: string }>>([]);
+  const [tags, setTags] = useState<string[]>([]);
   const { skills } = useBasic();
 
   const [linkedin, setLinkedin] = useState('');
   const [portfolio, setPortfolio] = useState('');
+
+  // Validation state
+  const [errors, setErrors] = useState<{
+    skills: string;
+    linkedin: string;
+    portfolio: string;
+  }>({
+    skills: '',
+    linkedin: '',
+    portfolio: '',
+  });
+
+  // Validation functions
+  const validateSkills = (skills: string[]) => {
+    if (!skills || skills.length === 0) {
+      return 'At least one skill is required';
+    }
+    if (skills.length > 10) {
+      return 'Maximum 10 skills allowed';
+    }
+    return '';
+  };
+
+  const validateLinkedIn = (url: string) => {
+    if (!url.trim()) {
+      return 'LinkedIn URL is required';
+    }
+
+    // LinkedIn URL validation
+    const linkedinRegex = /^https?:\/\/(www\.)?linkedin\.com\/(in|company)\/[a-zA-Z0-9\-_]+\/?$/;
+    if (!linkedinRegex.test(url.trim())) {
+      return 'Please enter a valid LinkedIn URL (e.g., https://linkedin.com/in/username)';
+    }
+
+    return '';
+  };
+
+  const validatePortfolio = (url: string) => {
+    if (!url.trim()) {
+      return 'Portfolio URL is required';
+    }
+
+    // URL validation
+    const urlRegex = /^https?:\/\/(www\.)?[a-zA-Z0-9\-_.]+\.[a-zA-Z]{2,}(\/.*)?$/;
+    if (!urlRegex.test(url.trim())) {
+      return 'Please enter a valid URL (e.g., https://example.com)';
+    }
+
+    return '';
+  };
+
+  const validateAll = () => {
+    const skillsError = validateSkills(tags);
+    const linkedinError = validateLinkedIn(linkedin);
+    const portfolioError = validatePortfolio(portfolio);
+
+    setErrors({
+      skills: skillsError,
+      linkedin: linkedinError,
+      portfolio: portfolioError,
+    });
+
+    return !skillsError && !linkedinError && !portfolioError;
+  };
+
   const saveQualifications = async () => {
     if (!jobId || !applicantId) throw new Error('Missing job or applicant ID');
+
+    // Validate before saving
+    if (!validateAll()) {
+      throw new Error('Please fix validation errors before saving');
+    }
+
     // Work Experience
     try {
       for (const work of workExperience) {
@@ -107,20 +179,47 @@ const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(functi
       const infoPayload = {
         job_id: Number(jobId),
         applicant_id: Number(applicantId),
-        skill_ids: tags.map((v: any) => skills.find((s: any) => s.name === v)?.id || v),
+        skill_ids: tags.map((v: string) => {
+          const skill = skills.find((s: any) => s.name === v);
+          return skill?.id || v;
+        }),
         linkedin_link: linkedin,
         portfolio_link: portfolio,
         other_links: otherLinks,
       };
       const response = await editApplicantInfo(infoPayload);
       return response;
-    } catch (error: any) {
+    } catch (error: unknown) {
       return error;
     }
   };
+
   useImperativeHandle(ref, () => ({
     saveQualifications
   }));
+
+  // Handle input changes with validation
+  const handleLinkedinChange = (value: string) => {
+    setLinkedin(value);
+    if (errors.linkedin) {
+      setErrors(prev => ({ ...prev, linkedin: validateLinkedIn(value) }));
+    }
+  };
+
+  const handlePortfolioChange = (value: string) => {
+    setPortfolio(value);
+    if (errors.portfolio) {
+      setErrors(prev => ({ ...prev, portfolio: validatePortfolio(value) }));
+    }
+  };
+
+  const handleSkillsChange = (newTags: string[]) => {
+    setTags(newTags);
+    if (errors.skills) {
+      setErrors(prev => ({ ...prev, skills: validateSkills(newTags) }));
+    }
+  };
+
   return (
     <div>
       <p className="font-medium text-[22px]/[30px]">Qualifications</p>
@@ -373,20 +472,39 @@ const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(functi
             suggestions={skills || []}
             restrictToSuggestions={true}
             tags={tags}
-            setTags={(tags) => setTags(tags)}
+            setTags={handleSkillsChange}
           />
+          {errors.skills && (
+            <p className="text-red-500 text-sm mt-1">{errors.skills}</p>
+          )}
         </div>
       </div>
       <div className="mt-[32px]">
         <p className="font-medium text-[14px]/[22px] text-[#353535]">LinkedIn</p>
         <div className="mt-[16px]">
-          <Input placeholder="LinkedIn" className="h-[48px]" value={linkedin} onChange={e => setLinkedin(e.target.value)} />
+          <Input
+            placeholder="LinkedIn URL (e.g., https://linkedin.com/in/username)"
+            className={cn("h-[48px]", errors.linkedin && "border-red-500")}
+            value={linkedin}
+            onChange={e => handleLinkedinChange(e.target.value)}
+          />
+          {errors.linkedin && (
+            <p className="text-red-500 text-sm mt-1">{errors.linkedin}</p>
+          )}
         </div>
       </div>
       <div className="mt-[32px]">
         <p className="font-medium text-[14px]/[22px] text-[#353535]">Website/Portfolio Link</p>
         <div className="mt-[16px]">
-          <Input placeholder="Website/Portfolio Link" className="h-[48px]" value={portfolio} onChange={e => setPortfolio(e.target.value)} />
+          <Input
+            placeholder="Website/Portfolio URL (e.g., https://example.com)"
+            className={cn("h-[48px]", errors.portfolio && "border-red-500")}
+            value={portfolio}
+            onChange={e => handlePortfolioChange(e.target.value)}
+          />
+          {errors.portfolio && (
+            <p className="text-red-500 text-sm mt-1">{errors.portfolio}</p>
+          )}
         </div>
       </div>
       <div className="mt-[32px]">
