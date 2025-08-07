@@ -164,7 +164,7 @@ const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(functi
         data-testid="qualifications-resume-file-card"
         id="qualifications-resume-file-card"
       >
-        File with Resume
+        Fill with Resume
       </div>
       <div className="mt-[36px]">
         <p className="font-medium text-[14px]/[22px] text-[#353535]">Work experience</p>
