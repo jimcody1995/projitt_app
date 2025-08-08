@@ -35,6 +35,21 @@ export const applicantEducationAdd = async (data: any) => {
     return response.data;
 }
 
+export const applicantExperienceEdit = async (data: any) => {
+    const response = await axios.post(`${process.env.NEXT_PUBLIC_BASE_PATH}/job/applicant-experience-edit`, data);
+    return response.data;
+}
+
+export const applicantCertificateEdit = async (data: any) => {
+    const response = await axios.post(`${process.env.NEXT_PUBLIC_BASE_PATH}/job/applicant-certificate-edit`, data);
+    return response.data;
+}
+
+export const applicantEducationEdit = async (data: any) => {
+    const response = await axios.post(`${process.env.NEXT_PUBLIC_BASE_PATH}/job/applicant-education-edit`, data);
+    return response.data;
+}
+
 export const editApplicantInfo = async (data: any) => {
     const response = await axios.post(`${process.env.NEXT_PUBLIC_BASE_PATH}/job/edit-applicant-info`, data);
     return response.data;
@@ -47,5 +62,15 @@ export const getQuestions = async (jobId: string, applicantId: string) => {
 
 export const updateQuestionAnswer = async (data: any) => {
     const response = await axios.post(`${process.env.NEXT_PUBLIC_BASE_PATH}/job/applicant-questions-answers/update`, data);
+    return response.data;
+}
+
+export const getApplicantInfo = async (jobId: string, applicantId: string) => {
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_PATH}/job/applicant-single`, { params: { job_id: jobId, applicant_id: applicantId } });
+    return response.data;
+}
+
+export const submitApplicant = async (data: any) => {
+    const response = await axios.post(`${process.env.NEXT_PUBLIC_BASE_PATH}/job/applicant-submit`, data);
     return response.data;
 }

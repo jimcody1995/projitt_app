@@ -2,6 +2,7 @@
 
 import React, { forwardRef, useImperativeHandle } from 'react';
 import FileDropUpload from './file-drop-upload';
+import { getApplicantInfo } from '@/api/applicant';
 
 /**
  * @description
@@ -25,13 +26,66 @@ interface ResumeRef {
   getData: () => ResumeData;
 }
 
-const Resume = forwardRef<ResumeRef, { onValidationChange: (isValid: boolean, data: ResumeData) => void }>(({ onValidationChange }, ref) => {
+const Resume = forwardRef<ResumeRef, {
+  onValidationChange: (isValid: boolean, data: ResumeData) => void;
+  jobId?: string;
+  applicantId?: string;
+  setLoading?: (loading: boolean) => void;
+}>(({ onValidationChange, jobId, applicantId, setLoading }, ref) => {
   const [resume, setResume] = React.useState<File | null>(null);
   const [otherDocuments, setOtherDocuments] = React.useState<File | null>(null);
   const [resumeID, setResumeID] = React.useState<string | null>(null);
   const [otherDocumentsID, setOtherDocumentsID] = React.useState<string | null>(null);
   const [resumeError, setResumeError] = React.useState<boolean>(false);
   const [otherDocumentsError, setOtherDocumentsError] = React.useState<boolean>(false);
+  const [applicantInfo, setApplicantInfo] = React.useState<{
+    cv_media_id?: number;
+    cover_media_id?: number;
+    cv_media?: {
+      original_name: string;
+      base_url: string;
+      unique_name: string;
+    };
+    cover_media?: {
+      original_name: string;
+      base_url: string;
+      unique_name: string;
+    };
+  } | null>(null);
+
+  // Fetch applicant info on component mount
+  React.useEffect(() => {
+    const getApplicantInfoData = async () => {
+      setLoading(true);
+      if (!jobId || !applicantId) return;
+      try {
+        const response = await getApplicantInfo(jobId, applicantId);
+        if (response.status === true) {
+          setApplicantInfo(response.data);
+          if (response.data.cv_media_id) {
+            setResumeID(response.data.cv_media_id.toString());
+            // Set the resume file URL if available
+            if (response.data.cv_media && response.data.cv_media.base_url && response.data.cv_media.unique_name) {
+              const url = response.data.cv_media.base_url + response.data.cv_media.unique_name;
+              setResume({ url, name: response.data.cv_media.original_name, type: 'application/pdf' } as any); // setResume expects File | null, but we set URL as a string for preview
+            }
+          }
+          if (response.data.cover_media_id) {
+            setOtherDocumentsID(response.data.cover_media_id.toString());
+            // Set the cover letter file URL if available
+            if (response.data.cover_media && response.data.cover_media.base_url && response.data.cover_media.unique_name) {
+              const url = response.data.cover_media.base_url + response.data.cover_media.unique_name;
+              setOtherDocuments({ url, name: response.data.cover_media.original_name, type: 'application/pdf' } as any); // setOtherDocuments expects File | null, but we set URL as a string for preview
+            }
+          }
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching applicant info:', error);
+      }
+    };
+    getApplicantInfoData();
+  }, [jobId, applicantId]);
 
   /**
    * @description

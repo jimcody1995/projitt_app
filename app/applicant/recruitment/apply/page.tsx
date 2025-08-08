@@ -8,13 +8,14 @@ import Resume from './components/resume';
 import Qualifications from './components/qualifications';
 import Questions from './components/questions';
 import Review from './components/review';
-import { applicantContactInfo, applicantResume } from '@/api/applicant';
+import { applicantContactInfo, applicantResume, getApplicantInfo, submitApplicant } from '@/api/applicant';
 import { useSearchParams } from 'next/navigation';
 import { customToast } from '@/components/common/toastr';
 import { QualificationsRef } from './components/qualifications';
 import { useEffect } from 'react';
 import { getQuestions } from '@/api/applicant';
 import { QuestionsRef } from './components/questions';
+import { useRouter } from 'next/navigation';
 
 /**
  * Apply component manages the multi-step job application process.
@@ -23,9 +24,10 @@ import { QuestionsRef } from './components/questions';
  */
 export default function Apply() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const jobId = searchParams.get('jobId');
   const applicantId = searchParams.get('applicantId');
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(5);
   const [loading, setLoading] = useState(false);
   const [stepData, setStepData] = useState({
     contactInfo: null,
@@ -35,7 +37,7 @@ export default function Apply() {
   });
   const [questions, setQuestions] = useState<any>([]);
   // Refs for each step component
-  const contactInfoRef = React.useRef<{ validate: () => boolean }>(null);
+  const contactInfoRef = React.useRef<{ validate: () => boolean; getData: () => any }>(null);
   const resumeRef = React.useRef<{ validate: () => boolean; getData: () => any }>(null);
   const qualificationsRef = React.useRef<QualificationsRef>(null);
   const questionsRef = React.useRef<QuestionsRef>(null);
@@ -45,11 +47,15 @@ export default function Apply() {
    * On success, advances to the next step.
    */
 
+
+
   const getQuestionsData = async () => {
+    setLoading(true)
     const response = await getQuestions(jobId as string, applicantId as string);
     if (response) {
       setQuestions(response);
     }
+    setLoading(false)
   };
 
   useEffect(() => {
@@ -68,7 +74,9 @@ export default function Apply() {
             setLoading(true);
             isValid = contactInfoRef.current.validate();
             if (isValid) {
-              const response = await applicantContactInfo({ ...(stepData.contactInfo as any), job_id: jobId, applicant_id: applicantId })
+              // Get data directly from the ref to ensure we have the latest data
+              const contactData = contactInfoRef.current?.getData() || {};
+              const response = await applicantContactInfo({ ...contactData, job_id: jobId, applicant_id: applicantId })
               if (response.data.status) {
                 setCurrentStep(currentStep + 1);
               }
@@ -154,6 +162,23 @@ export default function Apply() {
           }
         }
         break;
+      case 5:
+        try {
+          setLoading(true);
+          const response = await submitApplicant({ job_id: jobId, applicant_id: applicantId });
+          if (response.data.status) {
+            setCurrentStep(currentStep + 1);
+          }
+          setLoading(false);
+        } catch (error) {
+          setLoading(false);
+          customToast(
+            'Please fill all required fields',
+            'Missing details',
+            'error'
+          );
+          return;
+        }
       default:
         isValid = true;
     }
@@ -178,7 +203,7 @@ export default function Apply() {
       <div className="pb-[30px] flex justify-between pl-[84px] pr-[100px] border-b border-[#e9e9e9] sm:flex-row flex-col items-center gap-[10px]">
         <img src="/images/zaidLLC.png" alt="logo" className="h-[32px]" />
         <button className="flex gap-[10px] text-[#0D978B] cursor-pointer text-[14px]/[20px]" id="go-to-dashboard-link"
-          data-testid="go-to-dashboard-link">
+          data-testid="go-to-dashboard-link" onClick={() => router.push('/applicant/my-applications/1')}>
           <p>Go to Dashboard</p>
           <ArrowRight className="size-[20px]" />
         </button>
@@ -214,12 +239,15 @@ export default function Apply() {
                   onValidationChange={(isValid, data) => handleStepDataChange('contactInfo', data)}
                   id="contact-info-step"
                   data-testid="contact-info-step"
+                  jobId={jobId}
+                  applicantId={applicantId}
+                  setLoading={setLoading}
                 />
               )}
-              {currentStep === 2 && <Resume ref={resumeRef} onValidationChange={(isValid, data) => handleStepDataChange('resume', data)} />}
-              {currentStep === 3 && <Qualifications ref={qualificationsRef} jobId={jobId} applicantId={applicantId} />}
-              {currentStep === 4 && <Questions ref={questionsRef} jobId={jobId} applicantId={applicantId} />}
-              {currentStep === 5 && <Review />}
+              {currentStep === 2 && <Resume setLoading={setLoading} ref={resumeRef} onValidationChange={(isValid, data) => handleStepDataChange('resume', data)} jobId={jobId} applicantId={applicantId} />}
+              {currentStep === 3 && <Qualifications ref={qualificationsRef} jobId={jobId} applicantId={applicantId} setLoading={setLoading} />}
+              {currentStep === 4 && <Questions ref={questionsRef} jobId={jobId} applicantId={applicantId} setLoading={setLoading} />}
+              {currentStep === 5 && <Review jobId={jobId} applicantId={applicantId} setLoading={setLoading} />}
             </div>
             <div className="px-[40px] pt-[28px] pb-[32px] border-t border-[#e9e9e9] flex gap-[16px] sm:flex-row flex-col">
               {currentStep !== 1 && (
@@ -242,7 +270,7 @@ export default function Apply() {
                 </Button>
               )}
               {currentStep === 5 && (
-                <Button disabled={loading} className="h-[48px] w-full sm:order-2 order-1" onClick={() => setCurrentStep(currentStep + 1)}
+                <Button disabled={loading} className="h-[48px] w-full sm:order-2 order-1" onClick={handleNextStep}
                   id="submit-application-button"
                   data-testid="submit-application-button">
                   {loading ? 'Submitting...' : 'Submit Application'}
@@ -294,6 +322,7 @@ export default function Apply() {
                   className="w-[284px] h-[48px] font-semibold text-[16px]/[24px] mt-[36px]"
                   id="go-to-dashboard-button"
                   data-testid="go-to-dashboard-button"
+                  onClick={() => router.push('/applicant/my-applications/1')}
                 >
                   Go to Dashboard
                 </Button>

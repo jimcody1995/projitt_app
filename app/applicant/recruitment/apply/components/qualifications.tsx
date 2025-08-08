@@ -1,6 +1,6 @@
 'use client';
 
-import React, { forwardRef, useImperativeHandle, useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -20,7 +20,7 @@ import moment from 'moment';
 import { CalendarDays, Plus } from 'lucide-react';
 import { useBasic } from '@/context/BasicContext';
 import TagInput from '@/components/ui/tag-input';
-import { applicantExperienceAdd, applicantCertificateAdd, applicantEducationAdd, editApplicantInfo } from '@/api/applicant';
+import { applicantExperienceAdd, applicantCertificateAdd, applicantEducationAdd, editApplicantInfo, getApplicantInfo, applicantExperienceEdit, applicantCertificateEdit, applicantEducationEdit } from '@/api/applicant';
 
 /**
  * @description
@@ -69,18 +69,127 @@ interface Skill {
 interface QualificationsProps {
   jobId: string | null;
   applicantId: string | null;
+  setLoading: (loading: boolean) => void;
 }
 
-const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(function QualificationsComponent({ jobId, applicantId }, ref) {
+const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(function QualificationsComponent({ jobId, applicantId, setLoading }, ref) {
   const [workExperience, setWorkExperience] = useState<WorkExperience[]>([]);
   const [education, setEducation] = useState<Education[]>([]);
   const [certifications, setCertifications] = useState<Certifications[]>([]);
   const [otherLinks, setOtherLinks] = useState<OtherLink[]>([]);
   const [tags, setTags] = useState<string[]>([]);
   const { skills } = useBasic();
+  const [applicantInfo, setApplicantInfo] = useState<{
+    work_experience?: Array<{
+      id: number;
+      job_title: string;
+      company: string;
+      location: string;
+      from_date: string;
+      to_date: string;
+      is_currently_working: boolean;
+      role_description: string;
+    }>;
+    education?: Array<{
+      id: number;
+      school: string;
+      degree_id: number;
+      field_of_study: string;
+    }>;
+    certificate?: Array<{
+      id: number;
+      title: string;
+      number: string;
+      issued_date: string | null;
+      expiration_date: string | null;
+    }>;
+    skills?: Array<{
+      id: number;
+      name: string;
+    }>;
+    linkedin_link?: string;
+    portfolio_link?: string;
+    other_links?: Array<{ title: string; link: string }>;
+  } | null>(null);
 
   const [linkedin, setLinkedin] = useState('');
   const [portfolio, setPortfolio] = useState('');
+
+  // Fetch applicant info on component mount
+  useEffect(() => {
+    const getApplicantInfoData = async () => {
+      setLoading(true);
+      if (!jobId || !applicantId) return;
+      try {
+        const response = await getApplicantInfo(jobId, applicantId);
+        if (response.status === true) {
+          setApplicantInfo(response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching applicant info:', error);
+      }
+      setLoading(false);
+    };
+    getApplicantInfoData();
+  }, [jobId, applicantId, setLoading]);
+
+  // Initialize form data when applicantInfo is loaded
+  useEffect(() => {
+    if (applicantInfo) {
+      // Initialize work experience
+      if (applicantInfo.work_experience && applicantInfo.work_experience.length > 0) {
+        const formattedWorkExperience = applicantInfo.work_experience.map((work) => ({
+          id: work.id,
+          job_title: work.job_title || '',
+          company: work.company || '',
+          location: work.location || '',
+          from_date: work.from_date ? new Date(work.from_date) : new Date(),
+          to_date: work.to_date ? new Date(work.to_date) : new Date(),
+          is_currently_working: work.is_currently_working || false,
+          role_description: work.role_description || '',
+        }));
+        setWorkExperience(formattedWorkExperience);
+      }
+
+      // Initialize education
+      if (applicantInfo.education && applicantInfo.education.length > 0) {
+        const formattedEducation = applicantInfo.education.map((edu) => ({
+          id: edu.id,
+          school: edu.school || '',
+          degree: edu.degree_id?.toString() || '',
+          fieldOfStudy: edu.field_of_study || '',
+        }));
+        setEducation(formattedEducation);
+      }
+
+      // Initialize certifications
+      if (applicantInfo.certificate && applicantInfo.certificate.length > 0) {
+        const formattedCertifications = applicantInfo.certificate.map((cert) => ({
+          id: cert.id,
+          certification: cert.title || '',
+          certificationNumber: cert.number || '',
+          issueDate: cert.issued_date ? new Date(cert.issued_date) : new Date(),
+          expiryDate: cert.expiration_date ? new Date(cert.expiration_date) : new Date(),
+        }));
+        setCertifications(formattedCertifications);
+      }
+
+      // Initialize skills
+      if (applicantInfo.skills && applicantInfo.skills.length > 0) {
+        const skillNames = applicantInfo.skills.map((skill) => skill.name);
+        setTags(skillNames);
+      }
+
+      // Initialize links
+      setLinkedin(applicantInfo.linkedin_link || '');
+      setPortfolio(applicantInfo.portfolio_link || '');
+
+      // Initialize other links
+      if (applicantInfo.other_links && applicantInfo.other_links.length > 0) {
+        setOtherLinks(applicantInfo.other_links);
+      }
+    }
+  }, [applicantInfo]);
 
   /**
    * @description
@@ -105,7 +214,11 @@ const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(functi
           is_currently_working: work.is_currently_working,
           role_description: work.role_description,
         };
-        await applicantExperienceAdd(payload);
+        if (work.id) {
+          await applicantExperienceEdit({ ...payload, id: work.id });
+        } else {
+          await applicantExperienceAdd(payload);
+        }
       }
       // Certifications
       for (const cert of certifications) {
@@ -117,7 +230,11 @@ const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(functi
           issue_date: cert.issueDate ? moment(cert.issueDate).format('YYYY-MM-DD') : null,
           expiration_date: cert.expiryDate ? moment(cert.expiryDate).format('YYYY-MM-DD') : null,
         };
-        await applicantCertificateAdd(payload);
+        if (cert.id) {
+          await applicantCertificateEdit({ ...payload, id: cert.id });
+        } else {
+          await applicantCertificateAdd(payload);
+        }
       }
       // Education
       for (const edu of education) {
@@ -128,7 +245,11 @@ const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(functi
           degree_id: Number(edu.degree),
           field_of_study: edu.fieldOfStudy,
         };
-        await applicantEducationAdd(payload);
+        if (edu.id) {
+          await applicantEducationEdit({ ...payload, id: edu.id });
+        } else {
+          await applicantEducationAdd(payload);
+        }
       }
       // Applicant Info
       const infoPayload = {

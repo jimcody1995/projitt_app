@@ -59,6 +59,7 @@ const Questions = forwardRef<QuestionsRef, QuestionsProps>(({ jobId, applicantId
     const fetchQuestions = async () => {
       if (!jobId || !applicantId) return;
       try {
+        setLoading(true);
         const response = await getQuestions(jobId, applicantId);
         console.log(response);
 
@@ -68,15 +69,32 @@ const Questions = forwardRef<QuestionsRef, QuestionsProps>(({ jobId, applicantId
           const initialAnswers: { [key: number]: string | string[] } = {};
           response.data.forEach((question: Question) => {
             if (question.applicant_answer) {
-              if (question.answer_type === 'checkbox') {
-                initialAnswers[question.id] = question.applicant_answer.split(',').map(s => s.trim());
-              } else {
-                initialAnswers[question.id] = question.applicant_answer;
+              try {
+                // Parse the escaped JSON string
+
+                const finalAnswer = question.applicant_answer.split('\"')[1]
+                if (question.answer_type === 'checkbox') {
+                  initialAnswers[question.id] = finalAnswer.split(',').map((s: string) => s.trim());
+                } else {
+                  initialAnswers[question.id] = finalAnswer;
+                }
+              } catch (error) {
+                console.error('Error parsing applicant answer:', error);
+                // Fallback to original logic
+                if (question.answer_type === 'checkbox') {
+                  initialAnswers[question.id] = question.applicant_answer.split(',').map((s: string) => s.trim());
+                } else {
+                  initialAnswers[question.id] = question.applicant_answer;
+                }
               }
+
+              console.log(initialAnswers);
+
             }
           });
           setAnswers(initialAnswers);
         }
+        setLoading(false);
       } catch (error) {
         console.error('Error fetching questions:', error);
       } finally {

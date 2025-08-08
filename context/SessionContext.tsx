@@ -1,7 +1,7 @@
 'use client';
 
 import axios from "axios";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 
 import { createContext, useContext, useState, ReactNode, useLayoutEffect, JSX } from "react";
 
@@ -40,6 +40,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }): JSX.Elem
     const [loading, setLoading] = useState(true);
     const router = useRouter();
     const params = useParams();
+    const path = usePathname();
     useLayoutEffect(() => {
         const loadSession = async () => {
             setLoading(true);
@@ -50,10 +51,12 @@ export const SessionProvider = ({ children }: { children: ReactNode }): JSX.Elem
                 setSessionState({ token: stored, authenticated: true });
                 setTimeout(() => setLoading(false), 1000);
                 const jobId = params.jobId;
-                if (jobId && applicantId) {
-                    router.replace(`/applicant/recruitment/apply?jobId=${jobId}&applicantId=${applicantId}`);
-                } else {
-                    router.replace(`/applicant/recruitment/apply?jobId=1&applicantId=${applicantId}`);
+                if (path === '/applicant/recruitment/signin' || path === '/') {
+                    if (jobId && applicantId) {
+                        router.replace(`/applicant/recruitment/apply?jobId=${jobId}&applicantId=${applicantId}`);
+                    } else {
+                        router.replace(`/applicant/recruitment/apply?jobId=1&applicantId=${applicantId}`);
+                    }
                 }
             } else {
                 setSessionState({ token: null, authenticated: false });

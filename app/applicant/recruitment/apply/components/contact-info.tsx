@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/select';
 import { useBasic } from '@/context/BasicContext';
 import phoneNumber from '@/constants/phoneNumber.json';
+import { getApplicantInfo } from '@/api/applicant';
 
 /**
  * @description
@@ -20,11 +21,14 @@ import phoneNumber from '@/constants/phoneNumber.json';
  * It provides unique data-testid locators for UI elements to aid in test automation.
  */
 interface ContactInfoProps {
+  jobId: string;
+  applicantId: string;
   onValidationChange?: (isValid: boolean, data: any) => void;
+  setLoading?: (loading: boolean) => void;
 }
 
-const ContactInfo = React.forwardRef<{ validate: () => boolean }, ContactInfoProps>(
-  ({ onValidationChange }, ref) => {
+const ContactInfo = React.forwardRef<{ validate: () => boolean; getData: () => any }, ContactInfoProps>(
+  ({ onValidationChange, jobId, applicantId, setLoading }, ref) => {
     const { country } = useBasic();
     const [code, setCode] = React.useState('US');
     const [formData, setFormData] = React.useState({
@@ -50,6 +54,38 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean }, ContactInfoPro
       contact_code: '+1',
       contact_no: '',
     });
+    const [applicantInfo, setApplicantInfo] = React.useState<any>(null);
+
+    const getApplicantInfoData = async () => {
+      setLoading(true);
+      const response = await getApplicantInfo(jobId as string, applicantId as string);
+      if (response.status === true) {
+        setApplicantInfo(response.data);
+      }
+      setLoading(false);
+    };
+    useEffect(() => {
+      getApplicantInfoData();
+    }, [applicantId, jobId]);
+
+    // Initialize form data when applicantInfo is loaded
+    useEffect(() => {
+      if (applicantInfo) {
+        setFormData({
+          first_name: applicantInfo.applicant?.first_name || '',
+          last_name: applicantInfo.applicant?.last_name || '',
+          address: applicantInfo.address || '',
+          city: applicantInfo.city || '',
+          state: applicantInfo.state || '',
+          zip_code: applicantInfo.zip_code || '',
+          country: applicantInfo.country || '',
+          contact_code: applicantInfo.contact_code || '+1',
+          contact_no: applicantInfo.contact_number || '',
+        });
+      }
+    }, [applicantInfo]);
+
+
 
     /**
      * @description
@@ -125,6 +161,11 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean }, ContactInfoPro
      * @returns {boolean} - The overall validation status of the form.
      */
     const validateForm = () => {
+      // First, ensure parent component has the latest data
+      if (onValidationChange) {
+        onValidationChange(false, formData);
+      }
+
       const newErrors = {
         first_name: validateField('first_name', formData.first_name),
         last_name: validateField('last_name', formData.last_name),
@@ -141,6 +182,7 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean }, ContactInfoPro
 
       const isValid = Object.values(newErrors).every(error => error === '');
 
+      // Update parent with validation status
       if (onValidationChange) {
         onValidationChange(isValid, formData);
       }
@@ -151,7 +193,9 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean }, ContactInfoPro
     // Expose validation function to parent component via a forwarded ref.
     React.useImperativeHandle(ref, () => ({
       validate: validateForm,
+      getData: () => formData,
     }));
+
 
     return (
       <div>
@@ -197,7 +241,7 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean }, ContactInfoPro
           <p className="font-medium text-[14px]/[22px] text-[#353535]">Email Address *</p>
           <Input
             className={`mt-[12px] h-[48px]`}
-            value=""
+            value={applicantInfo?.applicant?.email || ''}
             disabled
             data-testid="contact-email-input"
             id="contact-email-input"
