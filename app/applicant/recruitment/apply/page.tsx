@@ -203,7 +203,7 @@ export default function Apply() {
       <div className="pb-[30px] flex justify-between pl-[84px] pr-[100px] border-b border-[#e9e9e9] sm:flex-row flex-col items-center gap-[10px]">
         <img src="/images/zaidLLC.png" alt="logo" className="h-[32px]" />
         <button className="flex gap-[10px] text-[#0D978B] cursor-pointer text-[14px]/[20px]" id="go-to-dashboard-link"
-          data-testid="go-to-dashboard-link" onClick={() => router.push('/applicant/my-applications/1')}>
+          data-testid="go-to-dashboard-link" onClick={() => router.push('/applicant/my-applications')}>
           <p>Go to Dashboard</p>
           <ArrowRight className="size-[20px]" />
         </button>

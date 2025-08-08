@@ -26,7 +26,7 @@ export default function ApplicationDetails() {
 
   return (
     <div
-      className="px-[420px] pt-[32px] pb-[57px]"
+      className="lg:px-[420px] pt-[32px] pb-[57px]"
       id="application-details-container"
       data-testid="application-details-container"
     >
@@ -41,7 +41,7 @@ export default function ApplicationDetails() {
       </div>
 
       <div
-        className="mt-[20px] bg-whtie border border-[#e9e9e9] w-full rounded-[16px]"
+        className="mt-[20px] bg-white border border-[#e9e9e9] w-full md:min-w-[350px] rounded-[16px]"
         id="application-card"
         data-testid="application-card"
       >

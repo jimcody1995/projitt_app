@@ -3,10 +3,10 @@ import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { ChevronDown, ChevronUp, FileText, FileUp, Loader, Trash } from 'lucide-react';
 import React from 'react';
-import * as pdfjsLib from 'pdfjs-dist';
-import 'pdfjs-dist/legacy/build/pdf.worker';
 import { uploadMedia } from '@/api/media';
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
+
+// Define a type for files that can be either File objects or objects with URL properties
+type FileOrUrl = File | { name: string; url: string };
 /**
  * FileDropUpload is a file upload component that allows users to drag and drop
  * or click to select a file for upload. It shows file type icons based on MIME type,
@@ -22,7 +22,7 @@ export default function FileDropUpload({
   label: string;
   setFile: React.Dispatch<React.SetStateAction<File | null>>;
   setID: React.Dispatch<React.SetStateAction<string | null>>;
-  file: File | null;
+  file: FileOrUrl | null;
   hasError?: boolean;
 }) {
   /**
@@ -52,6 +52,9 @@ export default function FileDropUpload({
     const renderPdf = async () => {
       if (!file || !preview) return;
 
+      // Only run on client side
+      if (typeof window === 'undefined') return;
+
       const canvas = document.getElementById('pdf-canvas') as HTMLCanvasElement;
       if (!canvas) return;
 
@@ -59,6 +62,10 @@ export default function FileDropUpload({
       if (!context) return;
 
       try {
+        // Dynamically import pdfjs-dist only on client side
+        const pdfjsLib = await import('pdfjs-dist');
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
+
         let pdf;
 
         if (file instanceof File) {
@@ -104,7 +111,7 @@ export default function FileDropUpload({
               <div className="flex justify-between" onClick={() => setPreview(!preview)}>
                 <div className="flex items-center gap-[10px]">
                   <FileText className="size-[20px]" />
-                  <p className="text-[14px]/[20px] text-[#353535]">{file instanceof File ? file.name : file.name}</p>
+                  <p className="text-[14px]/[20px] text-[#353535]">{file.name}</p>
                 </div>
                 {preview ? (
                   <ChevronUp className="size-[20px]" />
