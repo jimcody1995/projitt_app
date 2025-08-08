@@ -27,7 +27,7 @@ export default function Apply() {
   const router = useRouter();
   const jobId = searchParams.get('jobId');
   const applicantId = searchParams.get('applicantId');
-  const [currentStep, setCurrentStep] = useState(5);
+  const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [stepData, setStepData] = useState({
     contactInfo: null,
