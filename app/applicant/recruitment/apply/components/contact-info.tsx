@@ -12,6 +12,7 @@ import {
 import { useBasic } from '@/context/BasicContext';
 import phoneNumber from '@/constants/phoneNumber.json';
 import { getApplicantInfo } from '@/api/applicant';
+import { customToast } from '@/components/common/toastr';
 
 /**
  * @description
@@ -57,12 +58,17 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean; getData: () => a
     const [applicantInfo, setApplicantInfo] = React.useState<any>(null);
 
     const getApplicantInfoData = async () => {
-      setLoading(true);
-      const response = await getApplicantInfo(jobId as string, applicantId as string);
-      if (response.status === true) {
-        setApplicantInfo(response.data);
+      try {
+        setLoading(true);
+        const response = await getApplicantInfo(jobId as string, applicantId as string);
+        if (response.status === true) {
+          setApplicantInfo(response.data);
+        }
+      } catch (error: any) {
+        customToast('Error fetching applicant info', error?.response?.data?.message as string, 'error');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     useEffect(() => {
       getApplicantInfoData();

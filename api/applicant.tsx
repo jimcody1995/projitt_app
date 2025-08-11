@@ -50,6 +50,21 @@ export const applicantEducationEdit = async (data: any) => {
     return response.data;
 }
 
+export const applicantExperienceDelete = async (id: number) => {
+    const response = await axios.delete(`${process.env.NEXT_PUBLIC_BASE_PATH}/job/applicant-experience-delete`, { params: { ids: [id] } });
+    return response.data;
+}
+
+export const applicantCertificateDelete = async (id: number) => {
+    const response = await axios.delete(`${process.env.NEXT_PUBLIC_BASE_PATH}/job/applicant-certificate-delete`, { params: { ids: [id] } });
+    return response.data;
+}
+
+export const applicantEducationDelete = async (id: number) => {
+    const response = await axios.delete(`${process.env.NEXT_PUBLIC_BASE_PATH}/job/applicant-education-delete`, { params: { ids: [id] } });
+    return response.data;
+}
+
 export const editApplicantInfo = async (data: any) => {
     const response = await axios.post(`${process.env.NEXT_PUBLIC_BASE_PATH}/job/edit-applicant-info`, data);
     return response.data;
@@ -72,5 +87,15 @@ export const getApplicantInfo = async (jobId: string, applicantId: string) => {
 
 export const submitApplicant = async (data: any) => {
     const response = await axios.post(`${process.env.NEXT_PUBLIC_BASE_PATH}/job/applicant-submit`, data);
+    return response.data;
+}
+
+export const getJobInfo = async (jobId: string, applicantId: string) => {
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_PATH}/job/get-applicant-jobs`, { params: { job_id: jobId, applicant_id: applicantId } });
+    return response.data;
+}
+
+export const updateApplicantEmail = async (data: any) => {
+    const response = await axios.post(`${process.env.NEXT_PUBLIC_BASE_PATH}/job/applicant-change-email`, data);
     return response.data;
 }

@@ -3,6 +3,7 @@
 import React, { forwardRef, useImperativeHandle } from 'react';
 import FileDropUpload from './file-drop-upload';
 import { getApplicantInfo } from '@/api/applicant';
+import { customToast } from '@/components/common/toastr';
 
 /**
  * @description
@@ -80,12 +81,14 @@ const Resume = forwardRef<ResumeRef, {
           }
         }
         setLoading(false);
-      } catch (error) {
-        console.error('Error fetching applicant info:', error);
+      } catch (error: any) {
+        customToast('Error fetching applicant info', error?.response?.data?.message as string, 'error');
+      } finally {
+        setLoading(false);
       }
     };
     getApplicantInfoData();
-  }, [jobId, applicantId]);
+  }, [jobId, applicantId,]);
 
   /**
    * @description

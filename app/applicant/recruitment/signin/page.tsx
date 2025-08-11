@@ -100,8 +100,8 @@ export default function SignIn() {
       if (response.token) {
 
         axios.defaults.headers.common["Authorization"] = `Bearer ${response.token.applicant_token}`;
-        setSession({ token: response.token.applicant_token, authenticated: true });
-        localStorage.setItem("applicantId", response.token.id);
+        setSession({ token: response.token.applicant_token, authenticated: true, full_name: response.token.first_name + " " + response.token.last_name, email: response.token.email });
+        // localStorage.setItem("applicantId", response.token.id);
         const params = new URLSearchParams();
         params.set('jobId', '1');
         params.set('applicantId', response.token.id);
@@ -238,9 +238,8 @@ export default function SignIn() {
               <PinField
                 length={6}
                 onComplete={handleCodeComplete}
-                className={`mt-[32px] border rounded-[10px] sm:w-[56px] w-full h-[56px] text-center text-xl mx-1 focus:outline-none focus:ring-[3px] focus:ring-[#0D978B33] ${
-                  codeError ? 'border-red-500' : 'border-[#bcbcbc]'
-                }`}
+                className={`mt-[32px] border rounded-[10px] sm:w-[56px] w-full h-[56px] text-center text-xl mx-1 focus:outline-none focus:ring-[3px] focus:ring-[#0D978B33] ${codeError ? 'border-red-500' : 'border-[#bcbcbc]'
+                  }`}
                 id="signup-verify-pinfield"
                 data-testid="signup-verify-pinfield"
                 data-test-id="signup-verify-pinfield"

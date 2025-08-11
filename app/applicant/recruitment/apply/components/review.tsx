@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import FileDropUpload from './file-drop-upload';
 import { getApplicantInfo, getQuestions } from '@/api/applicant';
-import loading from '@/components/common/loading';
+import { customToast } from '@/components/common/toastr';
 
 interface ReviewProps {
   jobId?: string;
@@ -18,8 +17,8 @@ export default function Review({ jobId, applicantId, setLoading }: ReviewProps) 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      if (!jobId || !applicantId) return;
       try {
+        if (!jobId || !applicantId) return;
         // Fetch applicant info
         const applicantResponse = await getApplicantInfo(jobId, applicantId);
         if (applicantResponse.status === true) {
@@ -31,15 +30,15 @@ export default function Review({ jobId, applicantId, setLoading }: ReviewProps) 
         if (questionsResponse.status) {
           setQuestions(questionsResponse.data);
         }
-      } catch (error) {
-        console.error('Error fetching data:', error);
+      } catch (error: any) {
+        customToast('Error fetching data', error?.response?.data?.message as string, 'error');
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [jobId, applicantId]);
+  }, [jobId, applicantId, setLoading]);
 
   return (
     <div>
@@ -135,7 +134,7 @@ export default function Review({ jobId, applicantId, setLoading }: ReviewProps) 
             return (
               <div key={question.id} className="mt-[8px]">
                 <p className="text-[14px]/[22px] text-[#a5a5a5]">{question.question_name}</p>
-                <p className="text-[14px]/[22px] text-[#353535]">{answer}</p>
+                <p className="text-[14px]/[22px] text-[#353535] wrap-anywhere">{answer}</p>
               </div>
             );
           })}

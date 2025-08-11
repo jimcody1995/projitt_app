@@ -1,6 +1,10 @@
+'use client';
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useSession } from '@/context/SessionContext';
+import { customToast } from '@/components/common/toastr';
+import { updateApplicantEmail } from '@/api/applicant';
 
 /**
  * Settings component allows the user to view and update their email address.
@@ -8,10 +12,25 @@ import { Button } from '@/components/ui/button';
  * UI elements are annotated with test IDs for automation.
  */
 export default function Settings() {
+  const { session } = useSession();
+  const [newEmail, setNewEmail] = React.useState(session.email);
   /**
    * Renders the settings form to change the user's email address.
    * Includes current email, new email input, and a submission button.
    */
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewEmail(e.target.value);
+  }
+  const handleEmailSubmit = async () => {
+    try {
+      const response = await updateApplicantEmail({ existing_email: session.email, new_email: newEmail });
+      if (response.status) {
+        customToast('Success', 'Email updated successfully', 'success');
+      }
+    } catch (error: any) {
+      customToast('Error', error.response.data.message, 'error');
+    }
+  }
   return (
     <div
       className="lg:px-[283px] md:px-[131px] sm:px-[20px] pt-[55px]"
@@ -47,7 +66,7 @@ export default function Settings() {
             id="current-email"
             data-test-id="current-email"
           >
-            alicefernadez@gmail.com
+            {session.email}
           </p>
 
           <p
@@ -59,11 +78,13 @@ export default function Settings() {
           </p>
           <Input
             className="h-[52px] mt-[8px]"
-            value="afernadez@gmail.com"
+            value={newEmail}
             id="input-new-email"
             data-test-id="input-new-email"
+            onChange={handleEmailChange}
           />
           <Button
+            onClick={handleEmailSubmit}
             className="mt-[23px] h-[48px] w-full"
             id="change-email-button"
             data-test-id="change-email-button"

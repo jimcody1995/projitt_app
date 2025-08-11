@@ -2,6 +2,7 @@
 
 import React, { JSX } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { useSession } from '@/context/SessionContext';
 
 /**
  * Layout component for applicant dashboard pages.
@@ -14,6 +15,7 @@ export default function Layout({ children }: { children: React.ReactNode }): JSX
    */
   const router = useRouter();
   const pathname = usePathname();
+  const { session } = useSession();
 
   console.log(pathname);
 
@@ -40,9 +42,8 @@ export default function Layout({ children }: { children: React.ReactNode }): JSX
           data-test-id="nav-links"
         >
           <button
-            className={`text-[16px]/[24px] cursor-pointer ${
-              pathname.startsWith('/applicant/my-applications') ? 'text-[#0D978B]' : 'text-[#787878]'
-            }`}
+            className={`text-[16px]/[24px] cursor-pointer ${pathname.startsWith('/applicant/my-applications') ? 'text-[#0D978B]' : 'text-[#787878]'
+              }`}
             onClick={() => router.push('/applicant/my-applications')}
             id="nav-my-applications"
             data-test-id="nav-my-applications"
@@ -50,9 +51,8 @@ export default function Layout({ children }: { children: React.ReactNode }): JSX
             My Applications
           </button>
           <button
-            className={`text-[16px]/[24px] cursor-pointer ${
-              pathname.startsWith('/applicant/messages') ? 'text-[#0D978B]' : 'text-[#787878]'
-            }`}
+            className={`text-[16px]/[24px] cursor-pointer ${pathname.startsWith('/applicant/messages') ? 'text-[#0D978B]' : 'text-[#787878]'
+              }`}
             onClick={() => router.push('/applicant/messages')}
             id="nav-messages"
             data-test-id="nav-messages"
@@ -60,9 +60,8 @@ export default function Layout({ children }: { children: React.ReactNode }): JSX
             Messages
           </button>
           <button
-            className={`text-[16px]/[24px] cursor-pointer ${
-              pathname.startsWith('/applicant/settings') ? 'text-[#0D978B]' : 'text-[#787878]'
-            }`}
+            className={`text-[16px]/[24px] cursor-pointer ${pathname.startsWith('/applicant/settings') ? 'text-[#0D978B]' : 'text-[#787878]'
+              }`}
             onClick={() => router.push('/applicant/settings')}
             id="nav-settings"
             data-test-id="nav-settings"
@@ -86,7 +85,7 @@ export default function Layout({ children }: { children: React.ReactNode }): JSX
               id="avatar-initials"
               data-test-id="avatar-initials"
             >
-              AF
+              {session?.full_name?.split(' ')[0].charAt(0).toUpperCase() + session?.full_name?.split(' ')[1].charAt(0).toUpperCase()}
             </span>
           </div>
           <span
@@ -94,7 +93,7 @@ export default function Layout({ children }: { children: React.ReactNode }): JSX
             id="profile-name"
             data-test-id="profile-name"
           >
-            Ahmed Farouk
+            {session.full_name}
           </span>
         </div>
       </div>

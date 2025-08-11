@@ -20,7 +20,8 @@ import moment from 'moment';
 import { CalendarDays, Plus } from 'lucide-react';
 import { useBasic } from '@/context/BasicContext';
 import TagInput from '@/components/ui/tag-input';
-import { applicantExperienceAdd, applicantCertificateAdd, applicantEducationAdd, editApplicantInfo, getApplicantInfo, applicantExperienceEdit, applicantCertificateEdit, applicantEducationEdit } from '@/api/applicant';
+import { applicantExperienceAdd, applicantCertificateAdd, applicantEducationAdd, editApplicantInfo, getApplicantInfo, applicantExperienceEdit, applicantCertificateEdit, applicantEducationEdit, applicantExperienceDelete, applicantCertificateDelete, applicantEducationDelete } from '@/api/applicant';
+import { customToast } from '@/components/common/toastr';
 
 /**
  * @description
@@ -125,8 +126,8 @@ const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(functi
         if (response.status === true) {
           setApplicantInfo(response.data);
         }
-      } catch (error) {
-        console.error('Error fetching applicant info:', error);
+      } catch (error: any) {
+        customToast('Error fetching applicant info', error?.response?.data?.message as string, 'error');
       }
       setLoading(false);
     };
@@ -262,9 +263,54 @@ const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(functi
       };
       const response = await editApplicantInfo(infoPayload);
       return response;
-    } catch (error: unknown) {
-      console.error("Failed to save qualifications:", error);
+    } catch (error: any) {
+      customToast('Error saving qualifications', error?.response?.data?.message as string, 'error');
       throw error;
+    }
+  };
+
+  const handleRemoveWorkExperience = async (index: number, work: WorkExperience) => {
+    if (work.id) {
+      try {
+        await applicantExperienceDelete(work.id);
+        setWorkExperience(workExperience.filter((_, i) => i !== index));
+      } catch (error: any) {
+        customToast('Error removing work experience', error?.response?.data?.message as string, 'error');
+      }
+    }
+    else {
+      const updatedWorkExperience = workExperience.filter((_, i) => i !== index);
+      setWorkExperience(updatedWorkExperience);
+    }
+  };
+
+  const handleRemoveCertification = async (index: number, cert: Certificate) => {
+    if (cert.id) {
+      try {
+        await applicantCertificateDelete(cert.id);
+        setCertifications(certifications.filter((_, i) => i !== index));
+      } catch (error: any) {
+        customToast('Error removing certification', error?.response?.data?.message as string, 'error');
+      }
+    }
+    else {
+      const updatedCertifications = certifications.filter((_, i) => i !== index);
+      setCertifications(updatedCertifications);
+    }
+  };
+
+  const handleRemoveEducation = async (index: number, edu: Education) => {
+    if (edu.id) {
+      try {
+        await applicantEducationDelete(edu.id);
+        setEducation(education.filter((_, i) => i !== index));
+      } catch (error: any) {
+        customToast('Error removing education', error?.response?.data?.message as string, 'error');
+      }
+    }
+    else {
+      const updatedEducation = education.filter((_, i) => i !== index);
+      setEducation(updatedEducation);
     }
   };
 
@@ -402,6 +448,9 @@ const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(functi
                 data-testid={`work-experience-role-description-${index}`}
                 id={`work-experience-role-description-${index}`}
               />
+              <Button variant="outline" onClick={() => handleRemoveWorkExperience(index, work)} className='mt-[16px]'>
+                Remove
+              </Button>
             </div>
           </div>
         ))}
@@ -478,6 +527,9 @@ const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(functi
                 data-testid={`education-field-of-study-${index}`}
                 id={`education-field-of-study-${index}`}
               />
+              <Button variant="outline" onClick={() => handleRemoveEducation(index, edu)} className='mt-[16px]'>
+                Remove
+              </Button>
             </div>
           </div>
         ))}
@@ -578,6 +630,9 @@ const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(functi
                     </PopoverContent>
                   </Popover>
                 </div>
+                <Button variant="outline" onClick={() => handleRemoveCertification(index, cert)} className='mt-[16px]'>
+                  Remove
+                </Button>
               </div>
             </div>
           </div>

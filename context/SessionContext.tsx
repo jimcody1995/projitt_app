@@ -11,6 +11,8 @@ import { createContext, useContext, useState, ReactNode, useLayoutEffect, JSX } 
 type Session = {
     token: string | null;
     authenticated: boolean;
+    full_name: string | null;
+    email: string | null;
 };
 
 /**
@@ -36,35 +38,33 @@ const SessionContext = createContext<SessionContextType | undefined>(undefined);
  * @returns JSX.Element - The context provider wrapping children with session state
  */
 export const SessionProvider = ({ children }: { children: ReactNode }): JSX.Element => {
-    const [session, setSessionState] = useState<Session>({ token: null, authenticated: false });
+    const [session, setSessionState] = useState<Session>({ token: null, authenticated: false, full_name: null, email: null });
     const [loading, setLoading] = useState(true);
     const router = useRouter();
     const params = useParams();
     const path = usePathname();
     useLayoutEffect(() => {
-        const loadSession = async () => {
-            setLoading(true);
-            const stored = localStorage.getItem("session");
-            const applicantId = localStorage.getItem("applicantId");
-            if (stored) {
-                axios.defaults.headers.common["Authorization"] = `Bearer ${stored}`;
-                setSessionState({ token: stored, authenticated: true });
-                setTimeout(() => setLoading(false), 1000);
-                const jobId = params.jobId;
-                if (path === '/applicant/recruitment/signin' || path === '/') {
-                    if (jobId && applicantId) {
-                        router.replace(`/applicant/recruitment/apply?jobId=${jobId}&applicantId=${applicantId}`);
-                    } else {
-                        router.replace(`/applicant/recruitment/apply?jobId=1&applicantId=${applicantId}`);
-                    }
-                }
-            } else {
-                setSessionState({ token: null, authenticated: false });
-                setTimeout(() => setLoading(false), 1000);
-                router.replace('/applicant/recruitment/signin');
-            }
-        }
-        loadSession();
+        // const loadSession = async () => {
+        //     setLoading(true);
+        //     if (session.token) {
+        //         axios.defaults.headers.common["Authorization"] = `Bearer ${session.token}`;
+        //         setSessionState({ token: session.token, authenticated: true });
+        //         setTimeout(() => setLoading(false), 1000);
+        //         const jobId = params.jobId;
+        //         if (path === '/applicant/recruitment/signin' || path === '/') {
+        //             if (jobId && applicantId) {
+        //                 router.replace(`/applicant/recruitment/apply?jobId=${jobId}&applicantId=${applicantId}`);
+        //             } else {
+        //                 router.replace(`/applicant/recruitment/apply?jobId=1&applicantId=${applicantId}`);
+        //             }
+        //         }
+        //     } else {
+        setSessionState({ token: null, authenticated: false, full_name: null, email: null });
+        setTimeout(() => setLoading(false), 1000);
+        router.replace('/applicant/recruitment/signin');
+        //     }
+        // }
+        // loadSession();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -75,15 +75,14 @@ export const SessionProvider = ({ children }: { children: ReactNode }): JSX.Elem
      */
     const setSession = (session: Session): void => {
         setSessionState({ ...session });
-        localStorage.setItem("session", session.token || "");
     };
 
     /**
      * Clears the session state and removes the token from localStorage.
      */
     const clearSession = (): void => {
-        setSessionState({ token: null, authenticated: false });
-        localStorage.removeItem("session");
+        setSessionState({ token: null, authenticated: false, full_name: null, email: null });
+        // localStorage.removeItem("session");
     };
 
     return (

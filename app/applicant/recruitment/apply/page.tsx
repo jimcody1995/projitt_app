@@ -8,7 +8,7 @@ import Resume from './components/resume';
 import Qualifications from './components/qualifications';
 import Questions from './components/questions';
 import Review from './components/review';
-import { applicantContactInfo, applicantResume, getApplicantInfo, submitApplicant } from '@/api/applicant';
+import { applicantContactInfo, applicantResume, getApplicantInfo, getJobInfo, submitApplicant } from '@/api/applicant';
 import { useSearchParams } from 'next/navigation';
 import { customToast } from '@/components/common/toastr';
 import { QualificationsRef } from './components/qualifications';
@@ -35,7 +35,7 @@ export default function Apply() {
     qualifications: null,
     questions: null,
   });
-  const [questions, setQuestions] = useState<any>([]);
+  const [job, setJob] = useState<any>(null);
   // Refs for each step component
   const contactInfoRef = React.useRef<{ validate: () => boolean; getData: () => any }>(null);
   const resumeRef = React.useRef<{ validate: () => boolean; getData: () => any }>(null);
@@ -47,20 +47,23 @@ export default function Apply() {
    * On success, advances to the next step.
    */
 
-
-
-  const getQuestionsData = async () => {
+  const getJobInfoData = async () => {
     setLoading(true)
-    const response = await getQuestions(jobId as string, applicantId as string);
-    if (response) {
-      setQuestions(response);
+    try {
+      const response = await getJobInfo(jobId as string, applicantId as string);
+      if (response) {
+        setJob(response.data[0]);
+      }
+    } catch (error: any) {
+      customToast('Error fetching job info', error?.response?.data?.message as string, 'error');
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   };
 
   useEffect(() => {
-    getQuestionsData();
-  }, []);
+    getJobInfoData();
+  }, [jobId, applicantId]);
 
   // Handle validation for current step
   const handleNextStep = async () => {
@@ -212,9 +215,9 @@ export default function Apply() {
         <div className="lg:w-[865px] w-full flex bg-white mx-auto mt-[44px]">
           <div className="w-[321px] border-r border-[#e9e9e9] md:block hidden" id="sidebar" data-testid="sidebar">
             <div className="pl-[40px] pt-[36px] pb-[21px] border-b border-[#e9e9e9] ">
-              <p className="text-[18px]/[30px] text-[#353535]" id="job-title" data-testid="job-title">Senior Data Analyst</p>
+              <p className="text-[18px]/[30px] text-[#353535]" id="job-title" data-testid="job-title">{job?.job?.title}</p>
               <p className="text-[14px]/[22px] text-[#8f8f8f]" id="company-location" data-testid="company-location">
-                Big and Small Enterprise Ltd ~ USA
+                {job?.country?.name}
               </p>
             </div>
             <div className="pt-[40px] pl-[40px]">

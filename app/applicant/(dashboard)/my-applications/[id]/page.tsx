@@ -26,7 +26,7 @@ export default function ApplicationDetails() {
 
   return (
     <div
-      className="lg:px-[420px] pt-[32px] pb-[57px]"
+      className="lg:px-[420px] px-[10px] pt-[32px] pb-[57px]"
       id="application-details-container"
       data-testid="application-details-container"
     >
@@ -96,7 +96,7 @@ export default function ApplicationDetails() {
         </div>
 
         <div
-          className="pl-[40px] pr-[77px] pt-[30px] flex flex-col gap-[36px]"
+          className="pl-[40px] pr-[77px] pt-[30px] flex flex-col gap-[36px] pb-[20px]"
           id="application-sections"
           data-testid="application-sections"
         >

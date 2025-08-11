@@ -6,6 +6,7 @@ import React from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import 'pdfjs-dist/legacy/build/pdf.worker';
 import { uploadMedia } from '@/api/media';
+import { customToast } from '@/components/common/toastr';
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 /**
  * FileDropUpload is a file upload component that allows users to drag and drop
@@ -31,13 +32,18 @@ export default function FileDropUpload({
    */
   const [loading, setLoading] = React.useState<boolean>(false);
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    setLoading(true);
-    const response = await uploadMedia({ media: acceptedFiles[0] });
-    if (response.data.status) {
-      setID(response.data.data[0].id);
-      setFile(acceptedFiles[0]);
+    try {
+      setLoading(true);
+      const response = await uploadMedia({ media: acceptedFiles[0] });
+      if (response.data.status) {
+        setID(response.data.data[0].id);
+        setFile(acceptedFiles[0]);
+      }
+    } catch (error: any) {
+      customToast('Error uploading file', error?.response?.data?.message as string, 'error');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [setFile, setID]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

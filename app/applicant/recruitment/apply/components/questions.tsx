@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { getQuestions, updateQuestionAnswer } from '@/api/applicant';
 import { Label } from '@/components/ui/label';
+import { customToast } from '@/components/common/toastr';
 
 /**
  * @description
@@ -95,8 +96,8 @@ const Questions = forwardRef<QuestionsRef, QuestionsProps>(({ jobId, applicantId
           setAnswers(initialAnswers);
         }
         setLoading(false);
-      } catch (error) {
-        console.error('Error fetching questions:', error);
+      } catch (error: any) {
+        customToast('Error fetching questions', error?.response?.data?.message as string, 'error');
       } finally {
         setLoading(false);
       }
@@ -112,7 +113,19 @@ const Questions = forwardRef<QuestionsRef, QuestionsProps>(({ jobId, applicantId
    * @param {number} questionId - The ID of the question being answered.
    * @param {string | string[]} value - The new value of the answer.
    */
-  const handleAnswerChange = (questionId: number, value: string | string[]) => {
+  const handleAnswerChange = (questionId: number, value: string | string[], answerType: string) => {
+    if (answerType === 'short') {
+      if (value.length > 500) {
+        setErrors(prev => ({ ...prev, [questionId]: 'Answer cannot exceed 500 characters' }));
+        return
+      }
+    }
+    if (answerType === 'long_detail') {
+      if (value.length > 5000) {
+        setErrors(prev => ({ ...prev, [questionId]: 'Answer cannot exceed 5000 characters' }));
+        return
+      }
+    }
     setAnswers(prev => ({ ...prev, [questionId]: value }));
     if (errors[questionId]) {
       setErrors(prev => ({ ...prev, [questionId]: '' }));
@@ -165,8 +178,8 @@ const Questions = forwardRef<QuestionsRef, QuestionsProps>(({ jobId, applicantId
           await updateQuestionAnswer(payload);
         }
       }
-    } catch (error) {
-      console.error('Error saving answers:', error);
+    } catch (error: any) {
+      customToast('Error saving answers', error?.response?.data?.message as string, 'error');
       throw error;
     }
   };
@@ -193,33 +206,39 @@ const Questions = forwardRef<QuestionsRef, QuestionsProps>(({ jobId, applicantId
     switch (question.answer_type) {
       case 'short':
         return (
-          <Input
-            className={`mt-[8px] h-[48px] ${error ? 'border-red-500' : ''}`}
-            placeholder="Enter your answer"
-            value={answer as string}
-            onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-            data-testid={`question-input-${question.id}`}
-            id={`question-input-${question.id}`}
-          />
+          <>
+            <Input
+              className={`mt-[8px] h-[48px] ${error ? 'border-red-500' : ''}`}
+              placeholder="Enter your answer"
+              value={answer as string}
+              onChange={(e) => handleAnswerChange(question.id, e.target.value, question.answer_type)}
+              data-testid={`question-input-${question.id}`}
+              id={`question-input-${question.id}`}
+            />
+            <p className="text-[12px] text-right">{answers[question.id].length} / 500</p>
+          </>
         );
 
       case 'long_detail':
         return (
-          <Textarea
-            className={`mt-[8px] h-[153px] ${error ? 'border-red-500' : ''}`}
-            placeholder="Enter your detailed answer"
-            value={answer as string}
-            onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-            data-testid={`question-textarea-${question.id}`}
-            id={`question-textarea-${question.id}`}
-          />
+          <>
+            <Textarea
+              className={`mt-[8px] h-[153px] ${error ? 'border-red-500' : ''}`}
+              placeholder="Enter your detailed answer"
+              value={answer as string}
+              onChange={(e) => handleAnswerChange(question.id, e.target.value, question.answer_type)}
+              data-testid={`question-textarea-${question.id}`}
+              id={`question-textarea-${question.id}`}
+            />
+            <p className="text-[12px] text-right">{answers[question.id].length} / 5000</p>
+          </>
         );
 
       case 'dropdown':
         return (
           <Select
             value={answer as string}
-            onValueChange={(value) => handleAnswerChange(question.id, value)}
+            onValueChange={(value) => handleAnswerChange(question.id, value, question.answer_type)}
           >
             <SelectTrigger
               className={`w-full h-[48px] mt-[8px] ${error ? 'border-red-500' : ''}`}
@@ -256,7 +275,7 @@ const Questions = forwardRef<QuestionsRef, QuestionsProps>(({ jobId, applicantId
                     const newAnswers = checked
                       ? [...currentAnswers, option]
                       : currentAnswers.filter(a => a !== option);
-                    handleAnswerChange(question.id, newAnswers);
+                    handleAnswerChange(question.id, newAnswers, question.answer_type);
                   }}
                   data-testid={`question-checkbox-${question.id}-${index}`}
                 />
@@ -274,7 +293,7 @@ const Questions = forwardRef<QuestionsRef, QuestionsProps>(({ jobId, applicantId
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) {
-                handleAnswerChange(question.id, file.name);
+                handleAnswerChange(question.id, file.name, question.answer_type);
               }
             }}
             data-testid={`question-file-upload-${question.id}`}
