@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import PinField from 'react-pin-field';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { sendApplicantOTP, verifyApplicantOTP } from '@/api/applicant';
 import { customToast } from '@/components/common/toastr';
 import axios from 'axios';
@@ -24,7 +24,7 @@ export default function SignIn() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const { setSession } = useSession();
   const router = useRouter();
-
+  const params = useSearchParams();
   /**
    * Validates the email format.
    * @param email - The email string to validate.
@@ -102,10 +102,16 @@ export default function SignIn() {
         axios.defaults.headers.common["Authorization"] = `Bearer ${response.token.applicant_token}`;
         setSession({ token: response.token.applicant_token, authenticated: true, full_name: response.token.first_name + " " + response.token.last_name, email: response.token.email });
         // localStorage.setItem("applicantId", response.token.id);
-        const params = new URLSearchParams();
-        params.set('jobId', '1');
-        params.set('applicantId', response.token.id);
-        router.replace(`/applicant/recruitment/apply?${params.toString()}`);
+
+        const redirect = params.get('redirect');
+        if (redirect) {
+          router.replace(`${redirect}`);
+        } else {
+          const params = new URLSearchParams();
+          params.set('jobId', '1');
+          params.set('applicantId', response.token.id);
+          router.replace(`/applicant/recruitment/apply?${params.toString()}`);
+        }
       }
       setIsSubmitting(false);
     } catch (error: any) {

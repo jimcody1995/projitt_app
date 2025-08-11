@@ -61,11 +61,16 @@ export const SessionProvider = ({ children }: { children: ReactNode }): JSX.Elem
         //     } else {
         setSessionState({ token: null, authenticated: false, full_name: null, email: null });
         setTimeout(() => setLoading(false), 1000);
-        router.replace('/applicant/recruitment/signin');
+        if (window.location.pathname !== '/' && window.location.pathname !== '/applicant/recruitment/signin') {
+            router.replace(`/applicant/recruitment/signin?redirect=${encodeURIComponent(window.location.pathname)}`);
+        }
+        else {
+            router.replace('/applicant/recruitment/signin');
+        }
         //     }
         // }
         // loadSession();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
     }, []);
 
     /**
