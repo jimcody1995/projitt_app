@@ -1,7 +1,9 @@
 "use client";
 
-import { AlignJustify, Disc2, EllipsisVertical, Hand, LogOut, MessageSquare, Mic, MicOff, ScreenShare, Smile, Users, Video, VideoOff } from "lucide-react";
+import { AlignJustify, Disc2, EllipsisVertical, Hand, LogOut, MessageSquare, Mic, MicOff, ScreenShare, Smile, Star, Users, Video, VideoOff, Volume1 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import Chat from "./components/chat";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 
 export default function MeetingMain() {
@@ -10,7 +12,7 @@ export default function MeetingMain() {
     const [hasMicPermission, setHasMicPermission] = useState(false);
     const [hasVideoPermission, setHasVideoPermission] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-
+    const [showChat, setShowChat] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
 
@@ -179,26 +181,57 @@ export default function MeetingMain() {
     return (
         <div className="w-full h-[100vh] flex flex-col justify-between bg-black p-[24px] gap-[24px]">
             <div className="w-full flex justify-between items-center">
-                <img src="/images/logo-noletter.svg" alt="logo4meeting" className="w-[32px] h-[32px]" />
+                <div className="flex gap-[24px] items-center">
+                    <img src="/images/logo-noletter.svg" alt="logo4meeting" className="w-[32px] h-[32px]" />
+                    <div className="flex gap-[8px] items-center">
+                        <Volume1 className="size-[24px] text-white" />
+                        <span className="text-[16px]/[24px]  text-[#eff0fa]">Joy Banks, Iwobi (You)</span>
+                    </div>
+                </div>
                 <button className="w-[122px] h-[48px] bg-[#2e3038] rounded-[8px] flex justify-center items-center gap-[8px]">
                     <Disc2 className="text-white size-[30px]" />
                     <span className="text-[16px]/[24px] font-semibold text-[#ffffff]">Record</span>
                 </button>
             </div>
-            <div className="flex-1 ">
-                <div className="bg-[#11131A] w-full md:h-[calc(100vh-192px)] h-[calc(100vh-326px)] flex justify-center">
+            <div className="flex-1 w-full flex gap-[24px]">
+                <div className="bg-[#11131A] flex-1 md:h-[calc(100vh-192px)] h-[calc(100vh-326px)] flex justify-center relative rounded-[20px]">
+                    <div className="absolute top-[8px] right-[8px] flex  z-10">
+                        {hasMicPermission && (
+                            <div onClick={toggleMic} className={`cursor-pointer w-[32px] h-[32px] ${isMicEnabled ? 'bg-white' : 'bg-[#293042]'} rounded-full flex justify-center items-center`}>
+                                {isMicEnabled ? (
+                                    <Mic className="text-[#353535] size-[16px]" />
+                                ) : (
+                                    <MicOff className="text-white size-[16px]" />
+                                )}
+                            </div>
+                        )}
+                    </div>
+                    <button className="cursor-pointer absolute w-[28px] z-[6] bottom-[8px] right-[8px] h-[28px] ronded-[8px] bg-[#000000A3] flex justify-center items-center">
+                        <EllipsisVertical className="text-white size-[20px]" />
+                    </button>
+                    <span className="absolute bottom-[8px] left-[8px] px-[8px] py-[4px] rounded-[8px] bg-[#000000A3] text-white text-[14px]/[20px] font-semibold">John Doe</span>
+                    <div className="absolute bottom-[16px] border border-[#293042] right-[16px] flex justify-center items-center z-[4] w-[240px] h-[154px] rounded-[16px] bg-[#11131A]">
+                        <div className="absolute top-[8px] left-[8px] z-[8]  bg-[#293042] w-[32px] h-[32px] text-white rounded-full text-[12px] flex justify-center items-center">
+                            BRB
+                        </div>
+                        <div className="absolute bottom-[8px] left-[8px] py-[4px] px-[8px] text-[14px]/[20px]  text-white bg-[#000000A3] rounded-[8px]">
+                            Rita B
+                        </div>
+                        <div className="w-[58px] h-[58px] bg-[#7e47eb] rounded-full flex justify-center items-center">
+                            <span className="text-[24px]/[32px] font-semibold text-white">KA</span>
+                        </div>
+                    </div>
                     <video ref={videoRef} autoPlay playsInline muted className="h-full object-cover rounded-[20px]" />
                 </div>
+                {showChat && <Chat setShowChat={setShowChat} />}
             </div>
             <div className="flex  justify-between gap-[24px] md:flex-row flex-col w-full items-center">
                 <div className="flex gap-[16px]">
-                    {/* Microphone Control */}
-                    <div className="h-[48px] border border-[#8f8f8f] rounded-[8px] flex">
+                    <div className={`h-[48px] border  rounded-[8px] flex  ${isMicEnabled ? 'border-[#8f8f8f]' : 'border-[#2e3038] bg-[#2E3038]'}`}>
                         <button
                             onClick={toggleMic}
                             disabled={isLoading}
-                            className={`cursor-pointer w-[49px] h-full border-r border-[#8f8f8f] rounded-l-[8px] flex justify-center items-center transition-colors ${isMicEnabled ? 'bg-green-500 bg-opacity-20' : ''
-                                }`}
+                            className={`cursor-pointer w-[49px] h-full border-r border-[#8f8f8f] rounded-l-[8px] flex justify-center items-center transition-colors ${isMicEnabled ? '' : 'bg-[#2E3038]'}`}
                         >
                             {isMicEnabled ? (
                                 <Mic className="text-white size-[32px]" />
@@ -212,12 +245,11 @@ export default function MeetingMain() {
                     </div>
 
                     {/* Video Control */}
-                    <div className="h-[48px] border border-[#8f8f8f] rounded-[8px] flex">
+                    <div className={`h-[48px] border  rounded-[8px] flex  ${isVideoEnabled ? 'border-[#8f8f8f]' : 'border-[#2e3038] bg-[#2E3038]'}`}>
                         <button
                             onClick={toggleVideo}
                             disabled={isLoading}
-                            className={`cursor-pointer w-[49px] h-full border-r border-[#8f8f8f] rounded-l-[8px] flex justify-center items-center transition-colors ${isVideoEnabled ? 'bg-green-500 bg-opacity-20' : ''
-                                }`}
+                            className="cursor-pointer w-[49px] h-full border-r border-[#8f8f8f] rounded-l-[8px] flex justify-center items-center transition-colors"
                         >
                             {isVideoEnabled ? (
                                 <Video className="text-white size-[32px]" />
@@ -243,7 +275,40 @@ export default function MeetingMain() {
                             <ScreenShare className="text-white size-[32px]" />
                         </button>
                         <div className="w-[41px] h-full flex justify-center items-center">
-                            <EllipsisVertical className="text-white size-[24px]" />
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <button className="cursor-pointer w-[49px] h-full rounded-l-[8px] flex justify-center items-center transition-colors">
+                                        <EllipsisVertical className="text-white size-[24px]" />
+                                    </button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-[402px] bg-[#11131A] border-none p-[24px] rounded-[16px]">
+                                    <div className="w-full">
+                                        <p className="text-[20px]/[24px] text-white font-semibold">Start Sharing</p>
+                                        <p className="text-[14px]/[20px] text-[#C5C6D0]">Choose what you want to share</p>
+                                        <div className="flex gap-[24px] mt-[24px]">
+                                            <div className="w-full flex flex-col items-center">
+                                                <div className="w-full pt-[16px] px-[16px] rounded-[16px] bg-[#272A31]">
+                                                    <img src="/images/video/screen.png" alt="" className="w-[133px] h-[88px]" />
+                                                </div>
+                                                <p className="text-[14px]/[20px] text-[#eff0fa] font-semibold mt-[16px]">Share Screen</p>
+                                                <p className="text-[12px]/[16px] text-[#8f9099] text-center">Share a tab, window or your entire screen</p>
+                                            </div>
+                                            <div className="w-full flex flex-col items-center relative">
+                                                <div className="absolute top-[8px] left-[8px]  w-[66px] h-[24px] rounded-[24px] bg-[#0d978b] flex justify-center items-center">
+                                                    <Star className="size-[16px] text-white" />
+                                                    <p className="text-[12px]/[16px] text-white font-semibold">New!</p>
+                                                </div>
+                                                <div className="w-full pt-[16px] px-[16px] rounded-[16px] bg-[#272A31]">
+                                                    <img src="/images/video/pdf.png" alt="" className="w-[133px] h-[88px]" />
+                                                </div>
+                                                <p className="text-[14px]/[20px] text-[#eff0fa] font-semibold mt-[16px]">Share PDF</p>
+                                                <p className="text-[12px]/[16px] text-[#8f9099]  text-center">Annotate, draw shapes and more over PDFs</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </PopoverContent>
+                            </Popover>
                         </div>
                     </div>
                     <div className="w-[48px] h-[48px] border border-[#8f8f8f] rounded-[8px] flex justify-center items-center">
@@ -252,7 +317,7 @@ export default function MeetingMain() {
                     <div className="w-[48px] h-[48px] border border-[#8f8f8f] rounded-[8px] flex justify-center items-center">
                         <Smile className="text-white size-[32px]" />
                     </div>
-                    <div className="h-[48px] border border-[#8f8f8f] rounded-[8px] flex bg-[#c30606]">
+                    <div className="h-[48px] border border-[#c30606] rounded-[8px] flex bg-[#c30606]">
                         <button
                             className={`cursor-pointer w-[49px] h-full border-r border-[#270005] rounded-l-[8px] flex justify-center items-center transition-colors`}
                         >
@@ -264,7 +329,7 @@ export default function MeetingMain() {
                     </div>
                 </div>
                 <div className="flex gap-[16px]">
-                    <div className="w-[48px] h-[48px] border border-[#8f8f8f] rounded-[8px] flex justify-center items-center">
+                    <div onClick={() => setShowChat(!showChat)} className="cursor-pointer w-[48px] h-[48px] border border-[#8f8f8f] rounded-[8px] flex justify-center items-center">
                         <MessageSquare className="text-white size-[32px]" />
                     </div>
                     <div className="p-[8px] h-[48px] border border-[#8f8f8f] rounded-[8px] flex justify-center items-center gap-[8px]">
