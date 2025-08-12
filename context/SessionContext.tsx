@@ -65,7 +65,8 @@ export const SessionProvider = ({ children }: { children: ReactNode }): JSX.Elem
             return
         }
         else if (window.location.pathname !== '/' && window.location.pathname !== '/applicant/recruitment/signin') {
-            router.replace(`/applicant/recruitment/signin?redirect=${encodeURIComponent(window.location.pathname)}`);
+            const params = new URLSearchParams(window.location.search);
+            router.replace(`/applicant/recruitment/signin?redirect=${encodeURIComponent(window.location.pathname)}&${params}`);
         }
         else {
             router.replace('/applicant/recruitment/signin');

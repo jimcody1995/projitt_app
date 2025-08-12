@@ -107,11 +107,9 @@ export default function SignIn() {
         if (redirect && (redirect === '/applicant/messages' || redirect === '/applicant/settings' || redirect === '/applicant/my-applications')) {
           router.replace(`${redirect}`);
         }
-        else if (redirect && redirect === '/applicant/recruitment/apply') {
-          const params = new URLSearchParams();
-          params.set('jobId', '1');
-          params.set('applicantId', response.token.id);
-          router.replace(`/applicant/recruitment/apply?${params.toString()}`);
+        else if (redirect && redirect.startsWith('/applicant/recruitment/apply')) {
+
+          router.replace(redirect + '?jobId=' + params.get('jobId') + '&applicantId=' + response.token.id);
         }
         else {
           console.log("asdfasdf");
