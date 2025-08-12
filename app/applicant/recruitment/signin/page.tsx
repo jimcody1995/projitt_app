@@ -104,13 +104,19 @@ export default function SignIn() {
         // localStorage.setItem("applicantId", response.token.id);
 
         const redirect = params.get('redirect');
-        if (redirect && (redirect === '/applicant/messages' || redirect === '/applicant/settings' || redirect === '/applicant/my-applications' || redirect === '/applicant/recruitment/apply')) {
+        if (redirect && (redirect === '/applicant/messages' || redirect === '/applicant/settings' || redirect === '/applicant/my-applications')) {
           router.replace(`${redirect}`);
-        } else {
+        }
+        else if (redirect && redirect === '/applicant/recruitment/apply') {
           const params = new URLSearchParams();
           params.set('jobId', '1');
           params.set('applicantId', response.token.id);
           router.replace(`/applicant/recruitment/apply?${params.toString()}`);
+        }
+        else {
+          console.log("asdfasdf");
+
+          router.push(`/applicant/my-applications`);
         }
       }
       setIsSubmitting(false);
