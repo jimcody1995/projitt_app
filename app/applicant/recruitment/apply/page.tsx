@@ -16,6 +16,7 @@ import { useEffect } from 'react';
 import { getQuestions } from '@/api/applicant';
 import { QuestionsRef } from './components/questions';
 import { useRouter } from 'next/navigation';
+import { useSession } from '@/context/SessionContext';
 
 /**
  * Apply component manages the multi-step job application process.
@@ -29,6 +30,7 @@ export default function Apply() {
   const applicantId = searchParams.get('applicantId');
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const { session } = useSession();
   const [stepData, setStepData] = useState({
     contactInfo: null,
     resume: null,
@@ -62,7 +64,9 @@ export default function Apply() {
   };
 
   useEffect(() => {
-    getJobInfoData();
+    if (session.authenticated) {
+      getJobInfoData();
+    }
   }, [jobId, applicantId]);
 
   // Handle validation for current step

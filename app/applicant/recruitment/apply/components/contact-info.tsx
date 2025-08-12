@@ -13,6 +13,7 @@ import { useBasic } from '@/context/BasicContext';
 import phoneNumber from '@/constants/phoneNumber.json';
 import { getApplicantInfo } from '@/api/applicant';
 import { customToast } from '@/components/common/toastr';
+import { useSession } from '@/context/SessionContext';
 
 /**
  * @description
@@ -32,6 +33,7 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean; getData: () => a
   ({ onValidationChange, jobId, applicantId, setLoading }, ref) => {
     const { country } = useBasic();
     const [code, setCode] = React.useState('US');
+    const { session } = useSession();
     const [formData, setFormData] = React.useState({
       first_name: '',
       last_name: '',
@@ -71,7 +73,9 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean; getData: () => a
       }
     };
     useEffect(() => {
-      getApplicantInfoData();
+      if (session.authenticated) {
+        getApplicantInfoData();
+      }
     }, [applicantId, jobId]);
 
     // Initialize form data when applicantInfo is loaded

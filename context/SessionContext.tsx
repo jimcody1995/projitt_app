@@ -3,7 +3,7 @@
 import axios from "axios";
 import { useParams, usePathname, useRouter } from "next/navigation";
 
-import { createContext, useContext, useState, ReactNode, useLayoutEffect, JSX } from "react";
+import { createContext, useContext, useState, ReactNode, useLayoutEffect, JSX, useEffect } from "react";
 
 /**
  * Session type representing authentication token and status.
@@ -43,7 +43,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }): JSX.Elem
     const router = useRouter();
     const params = useParams();
     const path = usePathname();
-    useLayoutEffect(() => {
+    useEffect(() => {
         // const loadSession = async () => {
         //     setLoading(true);
         //     if (session.token) {

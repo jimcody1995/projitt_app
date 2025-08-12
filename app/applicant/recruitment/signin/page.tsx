@@ -104,7 +104,7 @@ export default function SignIn() {
         // localStorage.setItem("applicantId", response.token.id);
 
         const redirect = params.get('redirect');
-        if (redirect) {
+        if (redirect && (redirect === '/applicant/messages' || redirect === '/applicant/settings' || redirect === '/applicant/my-applications' || redirect === '/applicant/recruitment/apply')) {
           router.replace(`${redirect}`);
         } else {
           const params = new URLSearchParams();

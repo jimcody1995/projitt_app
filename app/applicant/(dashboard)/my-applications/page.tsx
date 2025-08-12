@@ -1,12 +1,13 @@
 'use client';
 
 import { BriefcaseBusiness, Clock, Dot, MapPin } from 'lucide-react';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ActionsCell } from './components/actionCell';
 import moment from 'moment';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-
+import { getJobInfo } from '@/api/applicant';
+import { useSession } from '@/context/SessionContext';
 /**
  * MyApplications component renders a list of job applications with status and metadata.
  * Each application card includes title, type, location, created date, status, and action buttons.
@@ -17,48 +18,25 @@ export default function MyApplications() {
    * Renders a list of application cards and handles navigation.
    * Applies dynamic styles and conditions based on application status.
    */
+  const [data, setData] = React.useState([]);
   const router = useRouter();
+  const { session } = useSession();
+  const applicant_id = localStorage.getItem('applicantId');
+  const getJobData = async () => {
+    const response = await getJobInfo(undefined, applicant_id);
+    setData(response.data);
+  }
 
-  const data = [
-    {
-      id: '1',
-      title: 'Senior Data Analyst',
-      location: 'United States',
-      type: 'Fulltime',
-      status: 'Not Submitted',
-      createdAt: new Date(),
-    },
-    {
-      id: '2',
-      title: 'Senior Data Analyst',
-      location: 'United States',
-      type: 'Fulltime',
-      status: 'Under Review',
-      createdAt: new Date(),
-    },
-    {
-      id: '3',
-      title: 'Senior Data Analyst',
-      location: 'United States',
-      type: 'Fulltime',
-      status: 'Interviewing',
-      createdAt: new Date(),
-    },
-    {
-      id: '4',
-      title: 'Senior Data Analyst',
-      location: 'United States',
-      type: 'Fulltime',
-      status: 'Rejected',
-      createdAt: new Date(),
-    },
-  ];
+  useEffect(() => {
+    getJobData();
+  }, []);
 
   const colors: Record<string, string> = {
     'Not Submitted': 'bg-[#e9e9e9]',
     'Under Review': 'bg-[#8f8f8f]',
     'Interviewing': 'bg-[#ff8914]',
     'Rejected': 'bg-[#c30606]',
+    "submitted": "bg-[#0d978b]"
   };
 
   return (
@@ -72,7 +50,7 @@ export default function MyApplications() {
         id="welcome-message"
         data-test-id="welcome-message"
       >
-        Welcome Alice,
+        Welcome {session.full_name},
       </p>
       <div
         className="grid md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-[22px] mt-[22px]"
@@ -93,7 +71,7 @@ export default function MyApplications() {
                 id={`status-pill-${item.id}`}
                 data-test-id={`status-pill-${item.id}`}
               >
-                <Dot className="size-[20px]" /> {item.status}
+                <Dot className="size-[20px]" /> {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
               </span>
               <ActionsCell />
             </div>
@@ -102,7 +80,7 @@ export default function MyApplications() {
               id={`job-title-${item.id}`}
               data-test-id={`job-title-${item.id}`}
             >
-              {item.title}
+              {item?.job?.title}
             </p>
             <div className="mt-[4px] flex gap-[8px]">
               <span
@@ -111,7 +89,7 @@ export default function MyApplications() {
                 data-test-id={`job-type-${item.id}`}
               >
                 <BriefcaseBusiness className="size-[16px]" />
-                {item.type}
+                {item?.job?.location_type?.name}
               </span>
               <span
                 className="text-[12px]/[18px] flex items-center gap-[2px] text-[#787878]"
@@ -119,7 +97,7 @@ export default function MyApplications() {
                 data-test-id={`job-location-${item.id}`}
               >
                 <MapPin className="size-[16px]" />
-                {item.location}
+                {item?.job?.country?.name}
               </span>
             </div>
             <div className="mt-[8px] flex gap-[4px]">
@@ -129,7 +107,7 @@ export default function MyApplications() {
                 id={`applied-date-${item.id}`}
                 data-test-id={`applied-date-${item.id}`}
               >
-                Applied : {moment(item.createdAt).format('MMMM DD YYYY')}
+                Applied : {moment(item.created_at).format('MMMM DD YYYY')}
               </span>
             </div>
             {item.status === 'Not Submitted' ? (
