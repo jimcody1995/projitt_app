@@ -124,7 +124,7 @@ export default function MyApplications() {
                 className="mt-[18px] w-full h-[32px]"
                 id={`view-btn-${item.id}`}
                 data-test-id={`view-btn-${item.id}`}
-                onClick={() => router.push(`/applicant/my-applications/${item.id}`)}
+                onClick={() => router.push(`/applicant/my-applications/${item.job_id}`)}
               >
                 View Application
               </Button>

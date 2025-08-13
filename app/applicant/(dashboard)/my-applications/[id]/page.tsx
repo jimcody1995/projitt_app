@@ -1,10 +1,13 @@
 'use client';
 
 import React from 'react';
-import { useParams } from 'next/navigation';
-import { ArrowLeft, BriefcaseBusiness, Clock, Dot, MapPin } from 'lucide-react';
+import { ArrowLeft, BriefcaseBusiness, Clock, Dot, Loader, MapPin } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import moment from 'moment';
+import { getApplicantInfo, getQuestions } from '@/api/applicant';
+import { customToast } from '@/components/common/toastr';
+import { useEffect, useState } from 'react';
+import { useBasic } from '@/context/BasicContext';
 
 /**
  * ApplicationDetails Component
@@ -13,11 +16,44 @@ import moment from 'moment';
  * job type, location, submission date, application status, contact information,
  * resume/cover letter, experience, and applicant question responses.
  */
-export default function ApplicationDetails() {
+export default function ApplicationDetails({ params }: { params: { id: string } }) {
   /**
    * Retrieves dynamic route parameter for application ID.
    */
-  const { id } = useParams();
+  const [applicantInfo, setApplicantInfo] = useState<any>(null);
+  const [questions, setQuestions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const { id } = params;
+  const jobId = id
+  const applicantId = localStorage.getItem('applicantId');
+  const { country } = useBasic()
+  console.log(country);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        if (!jobId || !applicantId) return;
+        // Fetch applicant info
+        const applicantResponse = await getApplicantInfo(jobId, applicantId);
+        if (applicantResponse.status === true) {
+          setApplicantInfo(applicantResponse.data);
+        }
+
+        // Fetch questions
+        const questionsResponse = await getQuestions(jobId, applicantId);
+        if (questionsResponse.status) {
+          setQuestions(questionsResponse.data);
+        }
+      } catch (error: any) {
+        customToast('Error fetching data', error?.response?.data?.message as string, 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [jobId, applicantId, setLoading]);
 
   /**
    * Provides navigation functionality, such as going back to the previous page.
@@ -56,7 +92,7 @@ export default function ApplicationDetails() {
               id="job-title"
               data-testid="job-title"
             >
-              Senior Data Analyst
+              {applicantInfo?.job?.title}
             </p>
             <div className="mt-[4px] flex gap-[8px]">
               <span
@@ -73,7 +109,7 @@ export default function ApplicationDetails() {
                 data-testid="job-location"
               >
                 <MapPin className="size-[16px]" />
-                United States
+                {country.find((item: any) => item.id === applicantInfo?.job?.country_id)?.name}
               </span>
               <span
                 className="text-[12px]/[18px] flex items-center gap-[2px] text-[#787878]"
@@ -81,7 +117,7 @@ export default function ApplicationDetails() {
                 data-testid="submission-date"
               >
                 <Clock className="size-[16px]" />
-                {moment(new Date()).format('MMMM DD YYYY')}
+                {moment(applicantInfo?.job?.deadline).format('MMMM DD YYYY')}
               </span>
             </div>
           </div>
@@ -91,65 +127,115 @@ export default function ApplicationDetails() {
             data-testid="application-status"
           >
             <Dot className="size-[20px]" />
-            Under Review
+            {applicantInfo?.status.charAt(0).toUpperCase() + applicantInfo?.status.slice(1)}
           </span>
         </div>
 
-        <div
+        {loading ? <>
+          <div className="flex items-center justify-center mt-[30px] pb-[20px]">
+            <Loader className="size-[20px] animate-spin" />
+          </div>
+        </> : <div
           className="pl-[40px] pr-[77px] pt-[30px] flex flex-col gap-[36px] pb-[20px]"
           id="application-sections"
           data-testid="application-sections"
         >
           {/* Contact Info Section */}
-          <div id="contact-info-section" data-testid="contact-info-section">
+          <div>
             <p className="text-[16px]/[24px] font-medium text-[#1c1c1c]">Contact Info</p>
-
             <p className="text-[14px]/[22px] text-[#a5a5a5]">Full Name</p>
-            <p className="text-[14px]/[22px] text-[#353535]">Alice Fernadez</p>
-
+            <p className="text-[14px]/[22px] text-[#353535]">
+              {applicantInfo?.applicant?.first_name} {applicantInfo?.applicant?.last_name}
+            </p>
             <p className="text-[14px]/[22px] text-[#a5a5a5] mt-[14px]">Email Address</p>
-            <p className="text-[14px]/[22px] text-[#353535]">alice.fernadez@gmail.com</p>
-
-            <p className="text-[14px]/[22px] text-[#a5a5a5] mt-[14px]">Address Line 1</p>
-            <p className="text-[14px]/[22px] text-[#353535]">123 Main St</p>
-
+            <p className="text-[14px]/[22px] text-[#353535]">{applicantInfo?.applicant?.email}</p>
+            <p className="text-[14px]/[22px] text-[#a5a5a5] mt-[14px]">Address</p>
+            <p className="text-[14px]/[22px] text-[#353535]">
+              {applicantInfo?.address}, {applicantInfo?.city}, {applicantInfo?.state} {applicantInfo?.zip_code}
+            </p>
             <p className="text-[14px]/[22px] text-[#a5a5a5] mt-[14px]">Phone Number</p>
-            <p className="text-[14px]/[22px] text-[#353535]">+1 (555) 123-4567</p>
+            <p className="text-[14px]/[22px] text-[#353535]">
+              {applicantInfo?.contact_code} {applicantInfo?.contact_number}
+            </p>
           </div>
 
-          {/* Resume/Cover Letter Section */}
-          <div id="resume-section" data-testid="resume-section">
+          <div>
             <p className="text-[16px]/[24px] font-medium text-[#1c1c1c]">Resume/Cover Letter</p>
+            {applicantInfo?.cv_media && (
+              <p className="text-[14px]/[22px] text-[#353535]">CV: {applicantInfo.cv_media.original_name}</p>
+            )}
+            {applicantInfo?.cover_media && (
+              <p className="text-[14px]/[22px] text-[#353535]">Cover Letter: {applicantInfo.cover_media.original_name}</p>
+            )}
           </div>
 
-          {/* Experience Section */}
-          <div id="experience-section" data-testid="experience-section">
+          <div>
             <p className="text-[16px]/[24px] font-medium text-[#1c1c1c]">Experience</p>
+            {applicantInfo?.work_experience?.map((work: any, index: number) => (
+              <div key={index} className="mt-[8px]">
+                <p className="text-[14px]/[22px] text-[#a5a5a5]">Experience {index + 1}</p>
+                <p className="text-[14px]/[22px] text-[#353535] font-medium">{work.job_title} at {work.company}</p>
+                <p className="text-[14px]/[22px] text-[#353535] font-medium">{work.location}</p>
+                <p className="text-[14px]/[22px] text-[#353535] font-medium">
+                  {new Date(work.from_date).toLocaleDateString()} - {work.is_currently_working ? 'Present' : new Date(work.to_date).toLocaleDateString()}
+                </p>
+                <p className="text-[14px]/[22px] text-[#4b4b4b]">{work.role_description}</p>
+              </div>
+            ))}
+            {applicantInfo?.education?.map((edu: any, index: number) => (
+              <div key={index} className="mt-[8px]">
+                <p className="text-[14px]/[22px] text-[#a5a5a5]">Education {index + 1}</p>
+                <p className="text-[14px]/[22px] text-[#353535] font-medium">{edu.school}</p>
+                <p className="text-[14px]/[22px] text-[#353535] font-medium">{edu.degree.name}</p>
+                <p className="text-[14px]/[22px] text-[#353535] font-medium">
+                  {edu.field_of_study}
+                </p>
+              </div>
+            ))}
+            {applicantInfo?.certificate?.map((cert: any, index: number) => (
+              <div key={index} className="mt-[8px]">
+                <p className="text-[14px]/[22px] text-[#a5a5a5]">Certification {index + 1}</p>
+                <p className="text-[14px]/[22px] text-[#353535] font-medium">{cert.title}</p>
+                <p className="text-[14px]/[22px] text-[#353535] font-medium">{cert.number}</p>
+
+              </div>
+            ))}
+            <div className="mt-[8px]">
+              <p className="text-[14px]/[22px] text-[#a5a5a5]">Skills</p>
+              <p className="text-[14px]/[22px] text-[#353535] font-medium">{applicantInfo?.skills.map((skill: any, index: number) => <span key={index}>{skill.name}</span>)}</p>
+            </div>
+            <div className="mt-[8px]">
+              <p className="text-[14px]/[22px] text-[#a5a5a5]">LinkedIn</p>
+              <p className="text-[14px]/[22px] text-[#353535] font-medium">{applicantInfo?.linkedin_link}</p>
+            </div>
+            <div className="mt-[8px]">
+              <p className="text-[14px]/[22px] text-[#a5a5a5]">Website/Portfolio Link</p>
+              <p className="text-[14px]/[22px] text-[#353535] font-medium">{applicantInfo?.portfolio_link}</p>
+            </div>
           </div>
 
-          {/* Applicant Questions Section */}
-          <div id="applicant-questions-section" data-testid="applicant-questions-section">
+          <div>
             <p className="text-[16px]/[24px] font-medium text-[#1c1c1c]">Applicant Questions</p>
+            {questions.map((question: any) => {
+              let answer = '';
+              if (question.applicant_answer) {
+                try {
+                  const finalAnswer = question.applicant_answer.split('\"')[1]
+                  answer = finalAnswer;
+                } catch (error) {
+                  answer = question.applicant_answer;
+                }
+              }
 
-            <p className="text-[14px]/[22px] text-[#a5a5a5] mt-[8px]">
-              Are you legally authorized to work in the US?
-            </p>
-            <p className="text-[14px]/[22px] text-[#353535]">Yes</p>
-
-            <p className="text-[14px]/[22px] text-[#a5a5a5] mt-[14px]">
-              Would you consider relocating for this role?
-            </p>
-            <p className="text-[14px]/[22px] text-[#353535]">Yes</p>
-
-            <p className="text-[14px]/[22px] text-[#a5a5a5] mt-[14px]">
-              Are you authorized to work in the US?
-            </p>
-            <p className="text-[14px]/[22px] text-[#353535]">Yes</p>
-
-            <p className="text-[14px]/[22px] text-[#a5a5a5] mt-[14px]">What degree do you hold?</p>
-            <p className="text-[14px]/[22px] text-[#353535]">Bachelor</p>
+              return (
+                <div key={question.id} className="mt-[8px]">
+                  <p className="text-[14px]/[22px] text-[#a5a5a5]">{question.question_name}</p>
+                  <p className="text-[14px]/[22px] text-[#353535] wrap-anywhere">{answer}</p>
+                </div>
+              );
+            })}
           </div>
-        </div>
+        </div>}
       </div>
     </div>
   );

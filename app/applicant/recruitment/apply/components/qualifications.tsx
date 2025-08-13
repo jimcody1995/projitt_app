@@ -448,7 +448,7 @@ const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(functi
                 data-testid={`work-experience-role-description-${index}`}
                 id={`work-experience-role-description-${index}`}
               />
-              <Button variant="outline" onClick={() => handleRemoveWorkExperience(index, work)} className='mt-[16px]'>
+              <Button variant="outline" onClick={() => handleRemoveWorkExperience(index, work)} className='mt-[16px] w-full'>
                 Remove
               </Button>
             </div>
@@ -527,7 +527,7 @@ const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(functi
                 data-testid={`education-field-of-study-${index}`}
                 id={`education-field-of-study-${index}`}
               />
-              <Button variant="outline" onClick={() => handleRemoveEducation(index, edu)} className='mt-[16px]'>
+              <Button variant="outline" onClick={() => handleRemoveEducation(index, edu)} className='mt-[16px] w-full'>
                 Remove
               </Button>
             </div>
@@ -630,7 +630,7 @@ const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(functi
                     </PopoverContent>
                   </Popover>
                 </div>
-                <Button variant="outline" onClick={() => handleRemoveCertification(index, cert)} className='mt-[16px]'>
+                <Button variant="outline" onClick={() => handleRemoveCertification(index, cert)} className='mt-[16px] w-full'>
                   Remove
                 </Button>
               </div>

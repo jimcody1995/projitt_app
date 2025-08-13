@@ -109,7 +109,7 @@ export default function SignIn() {
         }
         else if (redirect && redirect.startsWith('/applicant/recruitment/apply')) {
 
-          router.replace(redirect + '?jobId=' + params.get('jobId') + '&applicantId=' + response.token.id);
+          router.replace(redirect + '?jobId=' + (params.get('jobId') || "1") + '&applicantId=' + response.token.id);
         }
         else {
           console.log("asdfasdf");
