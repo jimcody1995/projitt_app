@@ -42,6 +42,7 @@ export default function MeetingMain() {
     const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false);
     const [selectedEmoji, setSelectedEmoji] = useState<string>("");
     const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
+    const [isScreenSharePopoverOpen, setIsScreenSharePopoverOpen] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
     const router = useRouter();
@@ -416,7 +417,7 @@ export default function MeetingMain() {
                             {isShareScreen ? <ScreenShare className="text-white size-[32px]" /> : <ScreenShareOff className="text-white size-[32px]" />}
                         </button>
                         <div className="w-[41px] h-full flex justify-center items-center">
-                            <Popover>
+                            <Popover open={isScreenSharePopoverOpen} onOpenChange={setIsScreenSharePopoverOpen}>
                                 <PopoverTrigger asChild>
                                     <button className="cursor-pointer w-[49px] h-full rounded-l-[8px] flex justify-center items-center transition-colors">
                                         <EllipsisVertical className="text-white size-[24px]" />
@@ -427,19 +428,22 @@ export default function MeetingMain() {
                                         <p className="text-[20px]/[24px] text-white font-semibold">Start Sharing</p>
                                         <p className="text-[14px]/[20px] text-[#C5C6D0]">Choose what you want to share</p>
                                         <div className="flex gap-[24px] mt-[24px]">
-                                            <div className="w-full flex flex-col items-center cursor-pointer" onClick={startScreenShare}>
-                                                <div className="w-full pt-[16px] px-[16px] rounded-[16px] bg-[#272A31]">
+                                            <div className="w-full flex flex-col items-center cursor-pointer group" onClick={() => {
+                                                startScreenShare();
+                                                setIsScreenSharePopoverOpen(false);
+                                            }}>
+                                                <div className="w-full pt-[16px] px-[16px] rounded-[16px] bg-[#272A31] group-hover:border-2 group-hover:border-[#8f8f8f] transition-all duration-200">
                                                     <img src="/images/video/screen.png" alt="" className="w-[133px] h-[88px]" />
                                                 </div>
                                                 <p className="text-[14px]/[20px] text-[#eff0fa] font-semibold mt-[16px]">Share Screen</p>
                                                 <p className="text-[12px]/[16px] text-[#8f9099] text-center">Share a tab, window or your entire screen</p>
                                             </div>
-                                            <div className="w-full flex flex-col items-center relative">
+                                            <div className="w-full flex flex-col items-center relative cursor-pointer group">
                                                 <div className="absolute top-[8px] left-[8px]  w-[66px] h-[24px] rounded-[24px] bg-[#0d978b] flex justify-center items-center">
                                                     <Star className="size-[16px] text-white" />
                                                     <p className="text-[12px]/[16px] text-white font-semibold">New!</p>
                                                 </div>
-                                                <div className="w-full pt-[16px] px-[16px] rounded-[16px] bg-[#272A31]">
+                                                <div className="w-full pt-[16px] px-[16px] rounded-[16px] bg-[#272A31] group-hover:border-2 group-hover:border-[#8f8f8f] transition-all duration-200">
                                                     <img src="/images/video/pdf.png" alt="" className="w-[133px] h-[88px]" />
                                                 </div>
                                                 <p className="text-[14px]/[20px] text-[#eff0fa] font-semibold mt-[16px]">Share PDF</p>
