@@ -1,6 +1,6 @@
 import { EllipsisVertical } from "lucide-react";
 
-export default function SmallVideo({ isVideoEnabled, videoRef }: { isVideoEnabled: boolean, videoRef: React.RefObject<HTMLVideoElement> }) {
+export default function SmallVideo({ isVideoEnabled, videoRef }: { isVideoEnabled: boolean, videoRef: React.RefObject<HTMLVideoElement | null> }) {
     return (
         <div className="bg-[#11131A] flex-1 !h-full flex justify-center items-center relative rounded-[20px]">
 
@@ -11,7 +11,7 @@ export default function SmallVideo({ isVideoEnabled, videoRef }: { isVideoEnable
 
             {!isVideoEnabled ? <div className="w-[88px] h-[88px] bg-[#eb4747] rounded-full flex justify-center items-center">
                 <span className="text-[34px]/[40px] font-semibold text-white">KA</span>
-            </div> : <video ref={videoRef} autoPlay playsInline muted className="h-full object-cover rounded-[20px]" />}
+            </div> : <video key="small-video" ref={videoRef} autoPlay playsInline muted className="h-full object-cover rounded-[20px]" />}
         </div>
     )
 }

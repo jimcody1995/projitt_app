@@ -17,16 +17,21 @@ export default function MeetingMain() {
     const [hasMicPermission, setHasMicPermission] = useState(false);
     const [hasVideoPermission, setHasVideoPermission] = useState(false);
     const [currentUsers, setCurrentUsers] = useState([{
-        name: '',
+        name: 'Cristiano Ronaldo',
         avatar: '',
         id: '',
     }, {
-        name: '',
+        name: 'Kamal Hossain',
         avatar: '',
         id: '',
     },
     {
-        name: '',
+        name: 'Rita Black',
+        avatar: '',
+        id: '',
+    },
+    {
+        name: 'Rita Black',
         avatar: '',
         id: '',
     }
@@ -35,9 +40,17 @@ export default function MeetingMain() {
     const [isLoading, setIsLoading] = useState(false);
     const [showChat, setShowChat] = useState(false);
     const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false);
+    const [selectedEmoji, setSelectedEmoji] = useState<string>("");
     const videoRef = useRef<HTMLVideoElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
     const router = useRouter();
+
+    const handleEmojiSelect = (emoji: string) => {
+        setSelectedEmoji(emoji);
+        // Here you can add logic to send the emoji to other participants
+        console.log("Selected emoji:", emoji);
+    };
+
     // Request microphone permission
     const requestMicPermission = async () => {
         try {
@@ -192,6 +205,20 @@ export default function MeetingMain() {
         }
     }, [hasVideoPermission, isVideoEnabled]);
 
+    // Ensure video stream is properly set when switching modes
+    useEffect(() => {
+        if (videoRef.current && streamRef.current && hasVideoPermission && isVideoEnabled) {
+            // Small delay to ensure DOM is ready
+            setTimeout(() => {
+                if (videoRef.current && streamRef.current) {
+                    videoRef.current.srcObject = streamRef.current;
+                    // Force video to play
+                    videoRef.current.play().catch(console.error);
+                }
+            }, 100);
+        }
+    }, [isShareScreen, hasVideoPermission, isVideoEnabled]);
+
     // Cleanup streams on unmount
     useEffect(() => {
         return () => {
@@ -210,6 +237,7 @@ export default function MeetingMain() {
         if (participants === 1) { cols = 1; rows = 1; }
         else if (participants === 2) { cols = 2; rows = 1; }
         else if (participants === 3) { cols = 2; rows = 2; }
+        else if (participants === 4) { cols = 2; rows = 2; }
         else if (participants === 5) { cols = 3; rows = 2; }
 
         grid.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
@@ -219,6 +247,16 @@ export default function MeetingMain() {
     useEffect(() => {
         updateGrid(currentUsers.length);
     }, [currentUsers]);
+
+    useEffect(() => {
+        // Update grid when screen share state changes
+        if (!isShareScreen) {
+            // Small delay to ensure DOM is updated
+            // setTimeout(() => {
+            updateGrid(currentUsers.length);
+            // }, 0);
+        }
+    }, [isShareScreen, currentUsers.length]);
     return (
         <div className="w-full h-[100vh] flex flex-col justify-between bg-black p-[24px] gap-[24px]">
             <div className="w-full flex justify-between items-center">
@@ -253,22 +291,22 @@ export default function MeetingMain() {
                                 <button className="cursor-pointer absolute w-[28px] z-[6] bottom-[8px] right-[8px] h-[28px] ronded-[8px] bg-[#000000A3] flex justify-center items-center">
                                     <EllipsisVertical className="text-white size-[20px]" />
                                 </button>
-                                <span className="absolute bottom-[8px] left-[8px] px-[8px] py-[4px] rounded-[8px] bg-[#000000A3] text-white text-[14px]/[20px] font-semibold">John Doe</span>
+                                <span className="absolute bottom-[8px] left-[8px] px-[8px] py-[4px] rounded-[8px] bg-[#000000A3] text-white text-[14px]/[20px] font-semibold">{user.name}</span>
 
                                 {!isVideoEnabled ? <div className="w-[88px] h-[88px] bg-[#eb4747] rounded-full flex justify-center items-center">
-                                    <span className="text-[34px]/[40px] font-semibold text-white">KA</span>
+                                    <span className="text-[34px]/[40px] font-semibold text-white">{user.name.split(' ').map(word => word.charAt(0)).join('').toUpperCase()}</span>
                                 </div>
-                                    : <video ref={videoRef} autoPlay playsInline muted className="h-full object-cover rounded-[20px]" />}
+                                    : <video key={`grid-video-${isShareScreen}`} ref={videoRef} autoPlay playsInline muted className="h-full object-cover rounded-[20px]" />}
                             </div>))}
                         <div className="absolute bottom-[16px] border border-[#293042] right-[16px] flex justify-center items-center z-[4] w-[240px] h-[154px] rounded-[16px] bg-[#11131A]">
                             <div className="absolute top-[8px] left-[8px] z-[8]  bg-[#293042] w-[32px] h-[32px] text-white rounded-full text-[12px] flex justify-center items-center">
                                 BRB
                             </div>
                             <div className="absolute bottom-[8px] left-[8px] py-[4px] px-[8px] text-[14px]/[20px]  text-white bg-[#000000A3] rounded-[8px]">
-                                Rita B
+                                James Lee
                             </div>
                             <div className="w-[58px] h-[58px] bg-[#7e47eb] rounded-full flex justify-center items-center">
-                                <span className="text-[24px]/[32px] font-semibold text-white">KA</span>
+                                <span className="text-[24px]/[32px] font-semibold text-white">JL</span>
                             </div>
                         </div>
                     </div>
@@ -375,9 +413,26 @@ export default function MeetingMain() {
                     <div className="w-[48px] h-[48px] border border-[#8f8f8f] rounded-[8px] flex justify-center items-center">
                         <Hand className="text-white size-[32px]" />
                     </div>
-                    <div className="w-[48px] h-[48px] border border-[#8f8f8f] rounded-[8px] flex justify-center items-center">
-                        <Smile className="text-white size-[32px]" />
-                    </div>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <button className="cursor-pointer w-[48px] h-[48px] border border-[#8f8f8f] rounded-[8px] flex justify-center items-center hover:bg-[#2e3038] transition-colors">
+                                <Smile className="text-white size-[32px]" />
+                            </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[320px] bg-[#11131A] border-[#2e3038] p-[16px] rounded-[12px] shadow-lg">
+                            <div className="grid grid-cols-8 gap-[8px]">
+                                {["👍", "👎", "👏", "🙌", "🤝", "👋", "✌️", "🤞", "❤️", "💙", "💚", "💛", "💜", "🧡", "🖤", "🤍", "😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🧐", "🤓", "😎", "🤩", "🥳", "😏", "😒", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠"].map((emoji, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => handleEmojiSelect(emoji)}
+                                        className="w-[32px] h-[32px] flex items-center justify-center text-[20px] hover:bg-[#2e3038] rounded-[6px] transition-colors cursor-pointer"
+                                    >
+                                        {emoji}
+                                    </button>
+                                ))}
+                            </div>
+                        </PopoverContent>
+                    </Popover>
                     <div className="h-[48px] border border-[#c30606] rounded-[8px] flex bg-[#c30606]">
                         <button
                             className={`cursor-pointer w-[49px] h-full border-r border-[#270005] rounded-l-[8px] flex justify-center items-center transition-colors`}
@@ -396,7 +451,7 @@ export default function MeetingMain() {
                     </div>
                     <div className="p-[8px] h-[48px] border border-[#8f8f8f] rounded-[8px] flex justify-center items-center gap-[8px]">
                         <Users className="text-white size-[32px]" />
-                        <span className="text-[16px]/[24px] text-[#ffffff] font-semibold">5</span>
+                        <span className="text-[16px]/[24px] text-[#ffffff] font-semibold">{currentUsers.length}</span>
                     </div>
                     <div className="w-[48px] h-[48px] border border-[#8f8f8f] rounded-[8px] flex justify-center items-center">
                         <AlignJustify className="text-white size-[32px]" />

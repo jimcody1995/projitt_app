@@ -6,7 +6,7 @@ import { Send } from "lucide-react";
 import { Smile } from "lucide-react";
 import { useState } from "react";
 
-export default function Chat(setShowChat: (showChat: boolean) => void) {
+export default function Chat({ setShowChat }: { setShowChat: (showChat: boolean) => void }) {
     const [selectedTab, setSelectedTab] = useState('chat');
     return (
         <div className="w-[400px] transition-all duration-300 ease-in-out  h-full bg-[#11131A] rounded-[8px] p-[24px] flex flex-col justify-between">

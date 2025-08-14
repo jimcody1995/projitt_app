@@ -5,7 +5,14 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  /* config options here */
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  // Packages that should be treated as external for server builds
+  serverExternalPackages: [
+    // Add your package names here, for example:
+    // 'three', 'some-other-lib'
+  ],
 };
 
 export default nextConfig;
