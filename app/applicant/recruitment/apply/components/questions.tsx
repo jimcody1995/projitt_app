@@ -200,7 +200,7 @@ const Questions = forwardRef<QuestionsRef, QuestionsProps>(({ jobId, applicantId
    * @returns {JSX.Element} The JSX for the question's input field.
    */
   const renderQuestion = (question: Question) => {
-    const answer = answers[question.id] || '';
+    const answer = answers[question.id] || (question.answer_type === 'checkbox' ? [] : '');
     const error = errors[question.id];
 
     switch (question.answer_type) {
@@ -215,7 +215,7 @@ const Questions = forwardRef<QuestionsRef, QuestionsProps>(({ jobId, applicantId
               data-testid={`question-input-${question.id}`}
               id={`question-input-${question.id}`}
             />
-            <p className="text-[12px] text-right">{answers[question.id].length} / 500</p>
+            <p className="text-[12px] text-right">{answer.length} / 500</p>
           </>
         );
 
@@ -230,7 +230,7 @@ const Questions = forwardRef<QuestionsRef, QuestionsProps>(({ jobId, applicantId
               data-testid={`question-textarea-${question.id}`}
               id={`question-textarea-${question.id}`}
             />
-            <p className="text-[12px] text-right">{answers[question.id].length} / 5000</p>
+            <p className="text-[12px] text-right">{answer.length} / 5000</p>
           </>
         );
 

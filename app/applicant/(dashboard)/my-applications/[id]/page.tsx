@@ -16,18 +16,36 @@ import { useBasic } from '@/context/BasicContext';
  * job type, location, submission date, application status, contact information,
  * resume/cover letter, experience, and applicant question responses.
  */
-export default function ApplicationDetails({ params }: { params: { id: string } }) {
+export default function ApplicationDetails({ params }: { params: Promise<{ id: string }> }) {
   /**
    * Retrieves dynamic route parameter for application ID.
    */
   const [applicantInfo, setApplicantInfo] = useState<any>(null);
   const [questions, setQuestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const { id } = params;
-  const jobId = id
-  const applicantId = localStorage.getItem('applicantId');
+  const [jobId, setJobId] = useState<string>('');
+  const [applicantId, setApplicantId] = useState<string>('');
   const { country } = useBasic()
-  console.log(country);
+
+  // Handle async params and localStorage
+  useEffect(() => {
+    const initializeData = async () => {
+      try {
+        const resolvedParams = await params;
+        setJobId(resolvedParams.id);
+
+        // Access localStorage only on client side
+        if (typeof window !== 'undefined') {
+          const storedApplicantId = localStorage.getItem('applicantId');
+          setApplicantId(storedApplicantId || '');
+        }
+      } catch (error) {
+        console.error('Error initializing data:', error);
+      }
+    };
+
+    initializeData();
+  }, [params]);
 
   useEffect(() => {
     const fetchData = async () => {
