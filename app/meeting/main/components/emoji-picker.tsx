@@ -1,17 +1,7 @@
 import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Smile } from "lucide-react";
-
-const commonEmojis = [
-    "👍", "👎", "👏", "🙌", "🤝", "👋", "✌️", "🤞",
-    "❤️", "💙", "💚", "💛", "💜", "🧡", "🖤", "🤍",
-    "😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣",
-    "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰",
-    "😘", "😗", "😙", "😚", "😋", "😛", "😝", "😜",
-    "🤪", "🤨", "🧐", "🤓", "😎", "🤩", "🥳", "😏",
-    "😒", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣",
-    "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠"
-];
+import { EMOJI_ARRAY } from "@/constants/emojis";
 
 interface EmojiPickerProps {
     onEmojiSelect: (emoji: string) => void;
@@ -34,7 +24,7 @@ export default function EmojiPicker({ onEmojiSelect }: EmojiPickerProps) {
             </PopoverTrigger>
             <PopoverContent className="w-[320px] bg-[#11131A] border-[#2e3038] p-[16px] rounded-[12px] shadow-lg">
                 <div className="grid grid-cols-8 gap-[8px]">
-                    {commonEmojis.map((emoji, index) => (
+                    {EMOJI_ARRAY.map((emoji, index) => (
                         <button
                             key={index}
                             onClick={() => handleEmojiClick(emoji)}
