@@ -1,9 +1,14 @@
 "use client";
 
-import { AlignJustify, Disc2, EllipsisVertical, Hand, LogOut, MessageSquare, Mic, MicOff, ScreenShare, Smile, Star, Users, Video, VideoOff, Volume1 } from "lucide-react";
+import { AlignJustify, Disc2, EllipsisVertical, Hand, LogOut, MessageSquare, Mic, MicOff, ScreenShare, ScreenShareOff, Smile, Star, TriangleAlert, Users, Video, VideoOff, Volume1 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import Chat from "./components/chat";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import SmallVideo from "./components/small-video";
+import ScreenShareLarge from "./components/screen-share";
+import DialogContent, { Dialog } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 
 export default function MeetingMain() {
@@ -11,11 +16,28 @@ export default function MeetingMain() {
     const [isVideoEnabled, setIsVideoEnabled] = useState(false);
     const [hasMicPermission, setHasMicPermission] = useState(false);
     const [hasVideoPermission, setHasVideoPermission] = useState(false);
+    const [currentUsers, setCurrentUsers] = useState([{
+        name: '',
+        avatar: '',
+        id: '',
+    }, {
+        name: '',
+        avatar: '',
+        id: '',
+    },
+    {
+        name: '',
+        avatar: '',
+        id: '',
+    }
+    ]);
+    const [isShareScreen, setIsShareScreen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [showChat, setShowChat] = useState(false);
+    const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
-
+    const router = useRouter();
     // Request microphone permission
     const requestMicPermission = async () => {
         try {
@@ -178,6 +200,25 @@ export default function MeetingMain() {
             }
         };
     }, []);
+
+    const updateGrid = (participants: number) => {
+        const grid = document.getElementById("videoGrid");
+        if (!grid) return;
+        let cols = Math.ceil(Math.sqrt(participants));
+        let rows = Math.ceil(participants / cols);
+
+        if (participants === 1) { cols = 1; rows = 1; }
+        else if (participants === 2) { cols = 2; rows = 1; }
+        else if (participants === 3) { cols = 2; rows = 2; }
+        else if (participants === 5) { cols = 3; rows = 2; }
+
+        grid.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+        grid.style.gridTemplateRows = `repeat(${rows}, minmax(0, 1fr))`;
+    }
+
+    useEffect(() => {
+        updateGrid(currentUsers.length);
+    }, [currentUsers]);
     return (
         <div className="w-full h-[100vh] flex flex-col justify-between bg-black p-[24px] gap-[24px]">
             <div className="w-full flex justify-between items-center">
@@ -194,36 +235,55 @@ export default function MeetingMain() {
                 </button>
             </div>
             <div className="flex-1 w-full flex gap-[24px]">
-                <div className="bg-[#11131A] flex-1 md:h-[calc(100vh-192px)] h-[calc(100vh-326px)] flex justify-center relative rounded-[20px]">
-                    <div className="absolute top-[8px] right-[8px] flex  z-10">
-                        {hasMicPermission && (
-                            <div onClick={toggleMic} className={`cursor-pointer w-[32px] h-[32px] ${isMicEnabled ? 'bg-white' : 'bg-[#293042]'} rounded-full flex justify-center items-center`}>
-                                {isMicEnabled ? (
-                                    <Mic className="text-[#353535] size-[16px]" />
-                                ) : (
-                                    <MicOff className="text-white size-[16px]" />
-                                )}
+                {!isShareScreen ?
+                    <div id="videoGrid" className="relative md:h-[calc(100vh-192px)] h-[calc(100vh-326px)] w-full grid gap-[16px] just">
+                        {currentUsers.map((user, index) => (
+                            <div key={index} className="bg-[#11131A] flex-1 h-full  flex justify-center items-center relative rounded-[20px]">
+                                <div className="absolute top-[8px] right-[8px] flex  z-10">
+                                    {hasMicPermission && (
+                                        <div onClick={toggleMic} className={`cursor-pointer w-[32px] h-[32px] ${isMicEnabled ? 'bg-white' : 'bg-[#293042]'} rounded-full flex justify-center items-center`}>
+                                            {isMicEnabled ? (
+                                                <Mic className="text-[#353535] size-[16px]" />
+                                            ) : (
+                                                <MicOff className="text-white size-[16px]" />
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                                <button className="cursor-pointer absolute w-[28px] z-[6] bottom-[8px] right-[8px] h-[28px] ronded-[8px] bg-[#000000A3] flex justify-center items-center">
+                                    <EllipsisVertical className="text-white size-[20px]" />
+                                </button>
+                                <span className="absolute bottom-[8px] left-[8px] px-[8px] py-[4px] rounded-[8px] bg-[#000000A3] text-white text-[14px]/[20px] font-semibold">John Doe</span>
+
+                                {!isVideoEnabled ? <div className="w-[88px] h-[88px] bg-[#eb4747] rounded-full flex justify-center items-center">
+                                    <span className="text-[34px]/[40px] font-semibold text-white">KA</span>
+                                </div>
+                                    : <video ref={videoRef} autoPlay playsInline muted className="h-full object-cover rounded-[20px]" />}
+                            </div>))}
+                        <div className="absolute bottom-[16px] border border-[#293042] right-[16px] flex justify-center items-center z-[4] w-[240px] h-[154px] rounded-[16px] bg-[#11131A]">
+                            <div className="absolute top-[8px] left-[8px] z-[8]  bg-[#293042] w-[32px] h-[32px] text-white rounded-full text-[12px] flex justify-center items-center">
+                                BRB
                             </div>
-                        )}
-                    </div>
-                    <button className="cursor-pointer absolute w-[28px] z-[6] bottom-[8px] right-[8px] h-[28px] ronded-[8px] bg-[#000000A3] flex justify-center items-center">
-                        <EllipsisVertical className="text-white size-[20px]" />
-                    </button>
-                    <span className="absolute bottom-[8px] left-[8px] px-[8px] py-[4px] rounded-[8px] bg-[#000000A3] text-white text-[14px]/[20px] font-semibold">John Doe</span>
-                    <div className="absolute bottom-[16px] border border-[#293042] right-[16px] flex justify-center items-center z-[4] w-[240px] h-[154px] rounded-[16px] bg-[#11131A]">
-                        <div className="absolute top-[8px] left-[8px] z-[8]  bg-[#293042] w-[32px] h-[32px] text-white rounded-full text-[12px] flex justify-center items-center">
-                            BRB
-                        </div>
-                        <div className="absolute bottom-[8px] left-[8px] py-[4px] px-[8px] text-[14px]/[20px]  text-white bg-[#000000A3] rounded-[8px]">
-                            Rita B
-                        </div>
-                        <div className="w-[58px] h-[58px] bg-[#7e47eb] rounded-full flex justify-center items-center">
-                            <span className="text-[24px]/[32px] font-semibold text-white">KA</span>
+                            <div className="absolute bottom-[8px] left-[8px] py-[4px] px-[8px] text-[14px]/[20px]  text-white bg-[#000000A3] rounded-[8px]">
+                                Rita B
+                            </div>
+                            <div className="w-[58px] h-[58px] bg-[#7e47eb] rounded-full flex justify-center items-center">
+                                <span className="text-[24px]/[32px] font-semibold text-white">KA</span>
+                            </div>
                         </div>
                     </div>
-                    <video ref={videoRef} autoPlay playsInline muted className="h-full object-cover rounded-[20px]" />
-                </div>
-                {showChat && <Chat setShowChat={setShowChat} />}
+                    :
+                    <ScreenShareLarge />
+                }
+                {(showChat || isShareScreen) &&
+                    <div className="w-[400px] h-full flex flex-col gap-[24px]">
+                        {isShareScreen && <div className="h-[225px]">
+                            <SmallVideo isVideoEnabled={isVideoEnabled} videoRef={videoRef} />
+                        </div>}
+                        <div className="flex-1">
+                            <Chat setShowChat={setShowChat} />
+                        </div>
+                    </div>}
             </div>
             <div className="flex  justify-between gap-[24px] md:flex-row flex-col w-full items-center">
                 <div className="flex gap-[16px]">
@@ -271,8 +331,9 @@ export default function MeetingMain() {
                     <div className="h-[48px] border border-[#8f8f8f] rounded-[8px] flex">
                         <button
                             className={`cursor-pointer w-[49px] h-full border-r border-[#8f8f8f] rounded-l-[8px] flex justify-center items-center transition-colors`}
+                            onClick={() => setIsShareScreen(!isShareScreen)}
                         >
-                            <ScreenShare className="text-white size-[32px]" />
+                            {isShareScreen ? <ScreenShare className="text-white size-[32px]" /> : <ScreenShareOff className="text-white size-[32px]" />}
                         </button>
                         <div className="w-[41px] h-full flex justify-center items-center">
                             <Popover>
@@ -320,6 +381,7 @@ export default function MeetingMain() {
                     <div className="h-[48px] border border-[#c30606] rounded-[8px] flex bg-[#c30606]">
                         <button
                             className={`cursor-pointer w-[49px] h-full border-r border-[#270005] rounded-l-[8px] flex justify-center items-center transition-colors`}
+                            onClick={() => setIsLeaveDialogOpen(true)}
                         >
                             <LogOut className="text-white size-[32px]" />
                         </button>
@@ -341,6 +403,27 @@ export default function MeetingMain() {
                     </div>
                 </div>
             </div>
+            <Dialog open={isLeaveDialogOpen} onOpenChange={setIsLeaveDialogOpen}>
+                <DialogContent className="w-[360px] bg-[#11131A] rounded-[16px] p-[24px] border-none">
+                    <div className="flex gap-[8px] items-center">
+                        <TriangleAlert className="text-[#C30606] size-[18px]" />
+                        <p className="text-[20px]/[24px] text-[#C30606] font-semibold">Leave Session</p>
+                    </div>
+                    <p className="text-[14px]/[20px] text-white mt-[8px]">Others will continue after you leave. You can join the session again.</p>
+                    <div className="flex gap-[16px] mt-[16px]">
+                        <Button variant="outline" className="w-full h-[48px] bg-transparent hover:bg-transparent cursor-pointer rounded-[8px] flex justify-center items-center gap-[8px]"
+                            onClick={() => setIsLeaveDialogOpen(false)}
+                        >
+                            <span className="text-[16px]/[24px] text-white font-semibold">Cancel</span>
+                        </Button>
+                        <Button className="w-full h-[48px] cursor-pointer bg-[#c30606] hover:bg-[#c30606]/[0.8] rounded-[8px] flex justify-center items-center gap-[8px]"
+                            onClick={() => router.push('/meeting')}
+                        >
+                            <span className="text-[16px]/[24px] text-white font-semibold">Leave Session</span>
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

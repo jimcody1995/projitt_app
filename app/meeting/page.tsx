@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { EllipsisVertical, Mic, MicOff, Settings, Video, VideoOff } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Meeting() {
     const [isMicEnabled, setIsMicEnabled] = useState(false);
@@ -11,7 +12,7 @@ export default function Meeting() {
     const [hasMicPermission, setHasMicPermission] = useState(false);
     const [hasVideoPermission, setHasVideoPermission] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-
+    const router = useRouter();
     const videoRef = useRef<HTMLVideoElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
 
@@ -287,7 +288,7 @@ export default function Meeting() {
                     )}
                 </div> */}
 
-                <Button className="w-full h-[48px] mt-[24px]">Join Now</Button>
+                <Button className="w-full h-[48px] mt-[24px]" onClick={() => router.push('/meeting/main')}>Join Now</Button>
                 <div className="mt-[30px] flex items-center justify-start gap-[8px] w-full">
                     <Switch />
                     <p className="text-[14px]/[16px] text-[#ffffff]">Use Projitt AI to take notes</p>

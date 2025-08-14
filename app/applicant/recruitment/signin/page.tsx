@@ -112,8 +112,6 @@ export default function SignIn() {
           router.replace(redirect + '?jobId=' + (params.get('jobId') || "1") + '&applicantId=' + response.token.id);
         }
         else {
-          console.log("asdfasdf");
-
           router.push(`/applicant/my-applications`);
         }
       }
