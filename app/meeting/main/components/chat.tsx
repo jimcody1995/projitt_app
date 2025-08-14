@@ -5,9 +5,11 @@ import { ChevronRight } from "lucide-react";
 import { Send } from "lucide-react";
 import { Smile } from "lucide-react";
 import { useState } from "react";
+import Image from "next/image";
 
 export default function Chat({ setShowChat }: { setShowChat: (showChat: boolean) => void }) {
     const [selectedTab, setSelectedTab] = useState('chat');
+    const [messages] = useState<Array<{ id: string; text: string; sender: string; timestamp: Date }>>([]); // Add messages state
     return (
         <div className="w-[400px] transition-all duration-300 ease-in-out  h-full bg-[#11131A] rounded-[8px] p-[24px] flex flex-col justify-between">
             <div className="flex justify-between items-center">
@@ -23,27 +25,59 @@ export default function Chat({ setShowChat }: { setShowChat: (showChat: boolean)
                     <X className="text-white size-[24px]" />
                 </button>
             </div>
-            {selectedTab === "chat" && <div className="flex flex-col gap-[8px]">
-                <div className="flex gap-[4px] items-center">
-                    <span className="text-[12px]/[16px]  text-[#C5C6D0]">To</span>
-                    <Button className="h-[24px] rounded-[4px] flex gap-[4px]">
-                        <Users className="size-[16px]" />
-                        <span className="text-[12px]/[16px]  text-[#ccdaff]">Everyone</span>
-                        <ChevronRight className="size-[12px] text-white" />
-                    </Button>
-                </div>
-                <div className="w-full flex gap-[4px] items-center py-[12px] px-[16px] rounded-[8px] bg-[#191b23]">
-                    <input type="text" placeholder="Send a message..." className="flex-1  text-white focus:outline-none" />
-                    <div className="flex gap-[16px]">
-                        <button className="cursor-pointer">
-                            <Smile className="size-[24px] text-white" />
-                        </button>
-                        <button className="cursor-pointer">
-                            <Send className="size-[24px] text-white" />
-                        </button>
+            {selectedTab === "chat" && (
+                <div className="flex flex-col gap-[8px] flex-1">
+                    {/* Messages area */}
+                    <div className="flex-1 flex flex-col">
+                        {messages.length === 0 ? (
+                            // Empty state
+                            <div className="flex-1 flex flex-col items-center justify-center text-center">
+                                <div className="mb-6">
+                                    <Image
+                                        src="/chat_empty.svg"
+                                        alt="Empty chat"
+                                        width={120}
+                                        height={120}
+                                        className="opacity-80"
+                                    />
+                                </div>
+                                <h3 className="text-white text-lg font-medium mb-2">
+                                    Start a conversation
+                                </h3>
+                                <p className="text-[#8F9099] text-sm max-w-[280px]">
+                                    There are no messages here yet. Start a conversation by sending a message.
+                                </p>
+                            </div>
+                        ) : (
+                            // Messages list would go here
+                            <div className="flex-1">
+                                {/* Messages would be rendered here */}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex gap-[4px] items-center">
+                        <span className="text-[12px]/[16px]  text-[#C5C6D0]">To</span>
+                        <Button className="h-[24px] rounded-[4px] flex gap-[4px]">
+                            <Users className="size-[16px]" />
+                            <span className="text-[12px]/[16px]  text-[#ccdaff]">Everyone</span>
+                            <ChevronRight className="size-[12px] text-white" />
+                        </Button>
+                    </div>
+
+                    <div className="w-full flex gap-[4px] items-center py-[12px] px-[16px] rounded-[8px] bg-[#191b23]">
+                        <input type="text" placeholder="Send a message..." className="flex-1  text-white focus:outline-none" />
+                        <div className="flex gap-[16px]">
+                            <button className="cursor-pointer">
+                                <Smile className="size-[24px] text-white" />
+                            </button>
+                            <button className="cursor-pointer">
+                                <Send className="size-[24px] text-white" />
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>}
+            )}
             {selectedTab === "participants" && <div className="flex flex-col gap-[8px] h-full">
                 <div className="w-full h-[48px] flex items-center bg-[#191b23] gap-[16px] py-[12px] px-[16px] mt-[16px]">
                     <Search className="size-[24px] text-white" />
