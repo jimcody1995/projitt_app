@@ -41,6 +41,7 @@ export default function MeetingMain() {
     const [showChat, setShowChat] = useState(false);
     const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false);
     const [selectedEmoji, setSelectedEmoji] = useState<string>("");
+    const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
     const router = useRouter();
@@ -219,14 +220,51 @@ export default function MeetingMain() {
         }
     }, [isShareScreen, hasVideoPermission, isVideoEnabled]);
 
+    // Start screen sharing
+    const startScreenShare = async () => {
+        try {
+            setIsLoading(true);
+            const stream = await navigator.mediaDevices.getDisplayMedia({
+                video: true,
+                audio: false
+            });
+
+            setScreenStream(stream);
+            setIsShareScreen(true);
+
+            // Handle stream ending
+            stream.getVideoTracks()[0].addEventListener('ended', () => {
+                stopScreenShare();
+            });
+
+        } catch (error) {
+            console.error('Screen sharing failed:', error);
+            setIsShareScreen(false);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Stop screen sharing
+    const stopScreenShare = () => {
+        if (screenStream) {
+            screenStream.getTracks().forEach(track => track.stop());
+            setScreenStream(null);
+        }
+        setIsShareScreen(false);
+    };
+
     // Cleanup streams on unmount
     useEffect(() => {
         return () => {
             if (streamRef.current) {
                 streamRef.current.getTracks().forEach(track => track.stop());
             }
+            if (screenStream) {
+                screenStream.getTracks().forEach(track => track.stop());
+            }
         };
-    }, []);
+    }, [screenStream]);
 
     const updateGrid = (participants: number) => {
         const grid = document.getElementById("videoGrid");
@@ -311,7 +349,10 @@ export default function MeetingMain() {
                         </div>
                     </div>
                     :
-                    <ScreenShareLarge />
+                    <ScreenShareLarge
+                        screenStream={screenStream}
+                        onStopScreenShare={stopScreenShare}
+                    />
                 }
                 {(showChat || isShareScreen) &&
                     <div className="w-[400px] h-full flex flex-col gap-[24px]">
@@ -369,7 +410,8 @@ export default function MeetingMain() {
                     <div className="h-[48px] border border-[#8f8f8f] rounded-[8px] flex">
                         <button
                             className={`cursor-pointer w-[49px] h-full border-r border-[#8f8f8f] rounded-l-[8px] flex justify-center items-center transition-colors`}
-                            onClick={() => setIsShareScreen(!isShareScreen)}
+                            onClick={isShareScreen ? stopScreenShare : startScreenShare}
+                            disabled={isLoading}
                         >
                             {isShareScreen ? <ScreenShare className="text-white size-[32px]" /> : <ScreenShareOff className="text-white size-[32px]" />}
                         </button>
@@ -385,7 +427,7 @@ export default function MeetingMain() {
                                         <p className="text-[20px]/[24px] text-white font-semibold">Start Sharing</p>
                                         <p className="text-[14px]/[20px] text-[#C5C6D0]">Choose what you want to share</p>
                                         <div className="flex gap-[24px] mt-[24px]">
-                                            <div className="w-full flex flex-col items-center">
+                                            <div className="w-full flex flex-col items-center cursor-pointer" onClick={startScreenShare}>
                                                 <div className="w-full pt-[16px] px-[16px] rounded-[16px] bg-[#272A31]">
                                                     <img src="/images/video/screen.png" alt="" className="w-[133px] h-[88px]" />
                                                 </div>
