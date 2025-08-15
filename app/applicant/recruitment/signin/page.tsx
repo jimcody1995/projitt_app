@@ -108,7 +108,7 @@ export default function SignIn() {
           router.replace(`${redirect}`);
         }
         else if (redirect && redirect.startsWith('/applicant/recruitment/apply')) {
-
+          console.log(params.get('jobId'));
           router.replace(redirect + '?jobId=' + (params.get('jobId') || "1") + '&applicantId=' + response.token.id);
         }
         else {
