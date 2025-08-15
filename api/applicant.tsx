@@ -90,8 +90,18 @@ export const submitApplicant = async (data: any) => {
     return response.data;
 }
 
-export const getJobInfo = async (jobId: string, applicantId: string) => {
-    const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_PATH}/job/get-applicant-jobs`, { params: { job_id: jobId, applicant_id: applicantId } });
+export const getJobInfo = async (jobId: string | undefined, applicantId: string | undefined) => {
+    const params: Record<string, string> = {};
+
+    if (jobId !== undefined) {
+        params.job_id = jobId;
+    }
+
+    if (applicantId !== undefined) {
+        params.applicant_id = applicantId;
+    }
+
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_PATH}/job/get-applicant-jobs`, { params });
     return response.data;
 }
 

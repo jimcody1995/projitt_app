@@ -8,6 +8,23 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { getJobInfo } from '@/api/applicant';
 import { useSession } from '@/context/SessionContext';
+
+interface JobApplication {
+  id: number;
+  job_id: number;
+  status: string;
+  created_at: string;
+  job: {
+    title: string;
+    location_type: {
+      name: string;
+    };
+    country: {
+      name: string;
+    };
+  };
+}
+
 /**
  * MyApplications component renders a list of job applications with status and metadata.
  * Each application card includes title, type, location, created date, status, and action buttons.
@@ -18,7 +35,7 @@ export default function MyApplications() {
    * Renders a list of application cards and handles navigation.
    * Applies dynamic styles and conditions based on application status.
    */
-  const [data, setData] = React.useState([]);
+  const [data, setData] = React.useState<JobApplication[]>([]);
   const router = useRouter();
   const { session } = useSession();
   const [applicant_id, setApplicantId] = React.useState<string | null>(null);
@@ -38,16 +55,17 @@ export default function MyApplications() {
   }, []);
 
   useEffect(() => {
+    console.log(applicant_id);
     if (applicant_id) {
       getJobData();
     }
   }, [applicant_id]);
 
   const colors: Record<string, string> = {
-    'Not Submitted': 'bg-[#e9e9e9]',
-    'Under Review': 'bg-[#8f8f8f]',
-    'Interviewing': 'bg-[#ff8914]',
-    'Rejected': 'bg-[#c30606]',
+    'not submitted': 'bg-[#e9e9e9]',
+    'under review': 'bg-[#8f8f8f]',
+    'interviewing': 'bg-[#ff8914]',
+    'rejected': 'bg-[#c30606]',
     "submitted": "bg-[#0d978b]"
   };
 
@@ -78,8 +96,8 @@ export default function MyApplications() {
           >
             <div className="w-full flex justify-between">
               <span
-                className={`pl-[3px] pr-[8px] py-[1px] ${item.status !== 'Not Submitted' ? 'text-white' : 'text-[#1c1c1c]'
-                  } text-[12px]/[22px] ${colors[item.status]} rounded-[30px] flex items-center`}
+                className={`pl-[3px] pr-[8px] py-[1px] ${item.status !== 'not submitted' ? 'text-white' : 'text-[#1c1c1c]'
+                  } text-[12px]/[22px] ${colors[item.status] || colors['rejected']} rounded-[30px] flex items-center`}
                 id={`status-pill-${item.id}`}
                 data-test-id={`status-pill-${item.id}`}
               >
@@ -122,7 +140,7 @@ export default function MyApplications() {
                 Applied : {moment(item.created_at).format('MMMM DD YYYY')}
               </span>
             </div>
-            {item.status === 'Not Submitted' ? (
+            {item.status === 'not submitted' ? (
               <Button
                 className="mt-[18px] w-full h-[32px]"
                 id={`continue-btn-${item.id}`}

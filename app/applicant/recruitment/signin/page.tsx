@@ -101,14 +101,14 @@ export default function SignIn() {
 
         axios.defaults.headers.common["Authorization"] = `Bearer ${response.token.applicant_token}`;
         setSession({ token: response.token.applicant_token, authenticated: true, full_name: response.token.first_name + " " + response.token.last_name, email: response.token.email });
-        // localStorage.setItem("applicantId", response.token.id);
+        localStorage.setItem("applicantId", response.token.id);
 
         const redirect = params.get('redirect');
         if (redirect && (redirect === '/applicant/messages' || redirect === '/applicant/settings' || redirect === '/applicant/my-applications')) {
           router.replace(`${redirect}`);
         }
         else if (redirect && redirect.startsWith('/applicant/recruitment/apply')) {
-
+          console.log(params.get('jobId'));
           router.replace(redirect + '?jobId=' + (params.get('jobId') || "1") + '&applicantId=' + response.token.id);
         }
         else {
