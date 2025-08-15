@@ -329,7 +329,7 @@ export default function Apply() {
                   className="w-[284px] h-[48px] font-semibold text-[16px]/[24px] mt-[36px]"
                   id="go-to-dashboard-button"
                   data-testid="go-to-dashboard-button"
-                  onClick={() => router.push('/applicant/my-applications/1')}
+                  onClick={() => router.push('/applicant/my-applications')}
                 >
                   Go to Dashboard
                 </Button>
