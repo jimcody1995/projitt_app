@@ -10,9 +10,19 @@ const nextConfig: NextConfig = {
   },
   // Packages that should be treated as external for server builds
   serverExternalPackages: [
-    // Add your package names here, for example:
-    // 'three', 'some-other-lib'
+    'pdfjs-dist',
   ],
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Handle PDF.js worker for client-side
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        path: false,
+      };
+    }
+    return config;
+  },
 };
 
 export default nextConfig;

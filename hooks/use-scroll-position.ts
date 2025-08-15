@@ -10,6 +10,9 @@ export function useScrollPosition({
   const [scrollPosition, setScrollPosition] = useState<number>(0);
 
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return;
+
     // If the ref is not provided or its current value is null, fall back to document
     const target = targetRef?.current || document;
     const scrollable = target === document ? window : target;

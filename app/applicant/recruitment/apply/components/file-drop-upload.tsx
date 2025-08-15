@@ -1,18 +1,31 @@
+'use client';
+
 import { Label } from '@/components/ui/label';
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { ChevronDown, ChevronUp, FileText, FileUp, Loader, Trash } from 'lucide-react';
 import React from 'react';
-import * as pdfjsLib from 'pdfjs-dist';
-import 'pdfjs-dist/legacy/build/pdf.worker';
 import { uploadMedia } from '@/api/media';
 import { customToast } from '@/components/common/toastr';
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
+
+// Dynamically import pdfjs-dist only on client side
+let pdfjsLib: typeof import('pdfjs-dist') | null = null;
+if (typeof window !== 'undefined') {
+  import('pdfjs-dist').then((pdfModule) => {
+    pdfjsLib = pdfModule;
+    // Note: We'll handle the worker import in the useEffect
+  });
+}
 /**
  * FileDropUpload is a file upload component that allows users to drag and drop
  * or click to select a file for upload. It shows file type icons based on MIME type,
  * and updates the selected file state in the parent component.
  */
+interface FileWithUrl {
+  name: string;
+  url: string;
+}
+
 export default function FileDropUpload({
   label,
   setFile,
@@ -23,7 +36,7 @@ export default function FileDropUpload({
   label: string;
   setFile: React.Dispatch<React.SetStateAction<File | null>>;
   setID: React.Dispatch<React.SetStateAction<string | null>>;
-  file: File | null;
+  file: File | FileWithUrl | null;
   hasError?: boolean;
 }) {
   /**
@@ -39,8 +52,9 @@ export default function FileDropUpload({
         setID(response.data.data[0].id);
         setFile(acceptedFiles[0]);
       }
-    } catch (error: any) {
-      customToast('Error uploading file', error?.response?.data?.message as string, 'error');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      customToast('Error uploading file', errorMessage, 'error');
     } finally {
       setLoading(false);
     }
@@ -56,7 +70,7 @@ export default function FileDropUpload({
 
   React.useEffect(() => {
     const renderPdf = async () => {
-      if (!file || !preview) return;
+      if (!file || !preview || typeof window === 'undefined') return;
 
       const canvas = document.getElementById('pdf-canvas') as HTMLCanvasElement;
       if (!canvas) return;
@@ -65,15 +79,23 @@ export default function FileDropUpload({
       if (!context) return;
 
       try {
+        // Ensure pdfjsLib is loaded
+        if (!pdfjsLib) {
+          const pdfModule = await import('pdfjs-dist');
+          pdfjsLib = pdfModule;
+          // Set worker source
+          pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
+        }
+
         let pdf;
 
         if (file instanceof File) {
           // Case 1: file is a real File
           const arrayBuffer = await file.arrayBuffer();
           pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
-        } else if (typeof file === 'object' && file !== null && 'url' in file) {
+        } else if (typeof file === 'object' && file !== null && 'url' in file && typeof (file as FileWithUrl).url === 'string') {
           // Case 2: file is a URL
-          pdf = await pdfjsLib.getDocument({ url: file.url }).promise;
+          pdf = await pdfjsLib.getDocument({ url: (file as FileWithUrl).url }).promise;
         } else {
           console.warn('Unsupported file type:', file);
           return;
@@ -110,7 +132,7 @@ export default function FileDropUpload({
               <div className="flex justify-between" onClick={() => setPreview(!preview)}>
                 <div className="flex items-center gap-[10px]">
                   <FileText className="size-[20px]" />
-                  <p className="text-[14px]/[20px] text-[#353535]">{file instanceof File ? file.name : file.name}</p>
+                  <p className="text-[14px]/[20px] text-[#353535]">{file.name}</p>
                 </div>
                 {preview ? (
                   <ChevronUp className="size-[20px]" />

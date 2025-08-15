@@ -91,6 +91,9 @@ export function VideoText({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return;
+
     const video = videoRef.current;
     const canvas = canvasRef.current;
     const textElement = textRef.current;
