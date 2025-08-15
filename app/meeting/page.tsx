@@ -191,7 +191,7 @@ export default function Meeting() {
     }, []);
 
     return (
-        <div className="w-full h-[100vh] bg-[#053834] flex items-center justify-center">
+        <div className="w-full h-[100vh] overflow-y-auto bg-[#053834] flex items-center justify-center">
             <div className="w-[480px] flex flex-col items-center" >
                 <img src="/images/white-logo.svg" alt="logo" className="h-[32px]" />
                 <p className="text-white text-[34px]/[40px] font-semibold mt-[40px]">Get Started</p>
