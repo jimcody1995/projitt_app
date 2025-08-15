@@ -10,11 +10,27 @@ import { customToast } from '@/components/common/toastr';
 
 // Dynamically import pdfjs-dist only on client side
 let pdfjsLib: typeof import('pdfjs-dist') | null = null;
-if (typeof window !== 'undefined') {
-  import('pdfjs-dist').then((pdfModule) => {
+
+// Utility function to ensure PDF.js is properly initialized
+const ensurePdfJsInitialized = async () => {
+  if (typeof window === 'undefined') return null;
+
+  if (!pdfjsLib) {
+    const pdfModule = await import('pdfjs-dist');
     pdfjsLib = pdfModule;
-    // Note: We'll handle the worker import in the useEffect
-  });
+  }
+
+  // Always ensure worker source is set
+  if (pdfjsLib && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
+  }
+
+  return pdfjsLib;
+};
+
+// Initialize PDF.js on module load
+if (typeof window !== 'undefined') {
+  ensurePdfJsInitialized();
 }
 /**
  * FileDropUpload is a file upload component that allows users to drag and drop
@@ -79,13 +95,13 @@ export default function FileDropUpload({
       if (!context) return;
 
       try {
-        // Ensure pdfjsLib is loaded
-        if (!pdfjsLib) {
-          const pdfModule = await import('pdfjs-dist');
-          pdfjsLib = pdfModule;
-          // Set worker source
-          pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
+        // Ensure pdfjsLib is loaded and properly initialized
+        const pdfModule = await ensurePdfJsInitialized();
+        if (!pdfModule) {
+          console.error('Failed to initialize PDF.js');
+          return;
         }
+        pdfjsLib = pdfModule;
 
         let pdf;
 
