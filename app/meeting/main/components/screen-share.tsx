@@ -1,12 +1,20 @@
-import { ScreenShare, X } from "lucide-react";
+import { Maximize2, ScreenShare, X } from "lucide-react";
 import { useRef, useEffect } from "react";
+import SmallVideo from "./small-video";
+import SmallVideoForScreen from "./small-video-screen";
 
 interface ScreenShareLargeProps {
     screenStream: MediaStream | null;
     onStopScreenShare: () => void;
+    currentUsers: {
+        name: string;
+        avatar: string;
+        id: string;
+    }[];
+    showChat: boolean;
 }
 
-export default function ScreenShareLarge({ screenStream, onStopScreenShare }: ScreenShareLargeProps) {
+export default function ScreenShareLarge({ screenStream, showChat, onStopScreenShare, currentUsers }: ScreenShareLargeProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
 
     useEffect(() => {
@@ -18,7 +26,7 @@ export default function ScreenShareLarge({ screenStream, onStopScreenShare }: Sc
 
     if (!screenStream) {
         return (
-            <div className="bg-[#11131A] flex-1 md:h-[calc(100vh-192px)] h-[calc(100vh-326px)] flex justify-center items-center flex-col relative rounded-[20px]">
+            <div className={`${(showChat && showChat === true) ? "md:flex hidden" : "flex"} bg-[#11131A] flex-1 md:h-[calc(100vh-192px)] h-[calc(100vh-326px)] flex justify-center items-center flex-col relative rounded-[20px]`}>
                 <ScreenShare className="text-white size-[80px]" />
                 <p className="text-white text-[24px]/[32px] font-semibold mt-[16px]">You are sharing your screen</p>
                 <button
@@ -33,25 +41,30 @@ export default function ScreenShareLarge({ screenStream, onStopScreenShare }: Sc
     }
 
     return (
-        <div className="bg-[#11131A] flex-1 md:h-[calc(100vh-192px)] h-[calc(100vh-326px)] flex justify-center items-center relative rounded-[20px] overflow-hidden">
-            <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
-                className="w-full h-full object-contain bg-black"
-            />
-            <div className="absolute top-[16px] right-[16px] flex gap-[8px]">
-                <div className="px-[12px] py-[6px] bg-[#000000A3] rounded-[8px] text-white text-[14px]/[20px] font-semibold">
-                    Screen Share
+        <div className={`${(showChat && showChat === true) ? "md:flex hidden" : "flex"} bg-[#11131A] flex-1 md:h-[calc(100vh-192px)] h-[calc(100vh-326px)] flex justify-center items-center flex-col gap-[24px] relative rounded-[20px] overflow-hidden`}>
+            <div className="relative w-full flex-1 min-h-0">
+                <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full flex-1 min-h-0 h-full object-contain bg-black"
+                />
+                <div className="absolute bottom-[16px] left-[16px] px-[8px] py-[4px] bg-[#000000A3] rounded-[8px] text-white text-[14px]/[20px] font-semibold flex items-center gap-[6px]">
+                    <ScreenShare className="text-white size-[24px]" /> Karen A is sharing their screen
                 </div>
-                <button
-                    onClick={onStopScreenShare}
-                    className="w-[40px] h-[32px] cursor-pointer bg-[#c30606] hover:bg-[#c30606]/[0.8] rounded-[8px] flex justify-center items-center"
-                >
-                    <X className="text-white size-[16px]" />
-                </button>
             </div>
+            <div className="w-full lg:flex hidden gap-[24px] h-[154px] items-center justify-center overflow-x-auto">
+                {currentUsers && currentUsers.slice(0, 4).map((user, index) =>
+                    <div key={index} className="w-[240px] h-[154px]">
+                        <SmallVideoForScreen user={user} isVideoEnabled={false} videoRef={null} />
+                    </div>
+                )}
+            </div>
+
+            <button className="cursor-pointer absolute top-[16px] right-[16px] p-[8px] bg-[#000000A3] rounded-[8px] text-white text-[14px]/[20px] font-semibold flex items-center gap-[6px]">
+                <Maximize2 className="text-white size-[24px]" />
+            </button>
         </div>
     );
 }

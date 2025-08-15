@@ -223,6 +223,10 @@ export default function MeetingMain() {
 
     // Start screen sharing
     const startScreenShare = async () => {
+        if (window.innerWidth < 1024) {
+            alert('Screen sharing is not supported on mobile devices');
+            return;
+        }
         try {
             setIsLoading(true);
             const stream = await navigator.mediaDevices.getDisplayMedia({
@@ -313,7 +317,7 @@ export default function MeetingMain() {
             </div>
             <div className="flex-1 w-full flex gap-[24px]">
                 {!isShareScreen ?
-                    <div id="videoGrid" className="relative md:h-[calc(100vh-192px)] h-[calc(100vh-326px)] w-full grid gap-[16px] just">
+                    <div id="videoGrid" className={`${showChat ? 'md:grid hidden' : 'grid'} relative md:h-[calc(100vh-192px)] h-[calc(100vh-326px)] w-full grid gap-[16px] just`}>
                         {currentUsers.map((user, index) => (
                             <div key={index} className="bg-[#11131A] flex-1 h-full  flex justify-center items-center relative rounded-[20px]">
                                 <div className="absolute top-[8px] right-[8px] flex  z-10">
@@ -332,39 +336,46 @@ export default function MeetingMain() {
                                 </button>
                                 <span className="absolute bottom-[8px] left-[8px] px-[8px] py-[4px] rounded-[8px] bg-[#000000A3] text-white text-[14px]/[20px] font-semibold">{user.name}</span>
 
-                                {!isVideoEnabled ? <div className="w-[88px] h-[88px] bg-[#eb4747] rounded-full flex justify-center items-center">
+                                <div className="w-[88px] h-[88px] bg-[#eb4747] rounded-full flex justify-center items-center">
                                     <span className="text-[34px]/[40px] font-semibold text-white">{user.name.split(' ').map(word => word.charAt(0)).join('').toUpperCase()}</span>
                                 </div>
-                                    : <video key={`grid-video-${isShareScreen}`} ref={videoRef} autoPlay playsInline muted className="h-full object-cover rounded-[20px]" />}
-                            </div>))}
+                            </div >))
+                        }
                         <div className="absolute bottom-[16px] border border-[#293042] right-[16px] flex justify-center items-center z-[4] w-[240px] h-[154px] rounded-[16px] bg-[#11131A]">
-                            <div className="absolute top-[8px] left-[8px] z-[8]  bg-[#293042] w-[32px] h-[32px] text-white rounded-full text-[12px] flex justify-center items-center">
-                                BRB
-                            </div>
-                            <div className="absolute bottom-[8px] left-[8px] py-[4px] px-[8px] text-[14px]/[20px]  text-white bg-[#000000A3] rounded-[8px]">
-                                James Lee
-                            </div>
-                            <div className="w-[58px] h-[58px] bg-[#7e47eb] rounded-full flex justify-center items-center">
-                                <span className="text-[24px]/[32px] font-semibold text-white">JL</span>
-                            </div>
+                            {!isVideoEnabled ? <div>
+                                <div className="absolute top-[8px] left-[8px] z-[8]  bg-[#293042] w-[32px] h-[32px] text-white rounded-full text-[12px] flex justify-center items-center">
+                                    BRB
+                                </div>
+                                <div className="absolute bottom-[8px] left-[8px] py-[4px] px-[8px] text-[14px]/[20px]  text-white bg-[#000000A3] rounded-[8px]">
+                                    James Lee
+                                </div>
+                                <div className="w-[58px] h-[58px] bg-[#7e47eb] rounded-full flex justify-center items-center">
+                                    <span className="text-[24px]/[32px] font-semibold text-white">JL</span>
+                                </div>
+                            </div> :
+                                <video key={`grid-video-${isShareScreen}`} ref={videoRef} autoPlay playsInline muted className="h-full object-cover rounded-[20px]" />}
                         </div>
-                    </div>
+                    </div >
                     :
                     <ScreenShareLarge
+                        showChat={showChat}
+                        currentUsers={currentUsers}
                         screenStream={screenStream}
                         onStopScreenShare={stopScreenShare}
                     />
                 }
-                {(showChat || isShareScreen) &&
-                    <div className="w-[400px] h-full flex flex-col gap-[24px]">
+                {
+                    (showChat || isShareScreen) &&
+                    <div className={`${isShareScreen && showChat === false ? "md:flex hidden" : "flex"} md:w-[400px] w-full md:h-[calc(100vh-192px)] h-[calc(100vh-326px)] flex-col gap-[24px]`}>
                         {isShareScreen && <div className="h-[225px]">
                             <SmallVideo isVideoEnabled={isVideoEnabled} videoRef={videoRef} />
                         </div>}
-                        <div className="flex-1">
+                        <div className="flex-1 h-full">
                             <Chat setShowChat={setShowChat} />
                         </div>
-                    </div>}
-            </div>
+                    </div>
+                }
+            </div >
             <div className="flex  justify-between gap-[24px] md:flex-row flex-col w-full items-center">
                 <div className="flex gap-[16px]">
                     <div className={`h-[48px] border  rounded-[8px] flex  ${isMicEnabled ? 'border-[#8f8f8f]' : 'border-[#2e3038] bg-[#2E3038]'}`}>
@@ -525,6 +536,6 @@ export default function MeetingMain() {
                     </div>
                 </DialogContent>
             </Dialog>
-        </div>
+        </div >
     );
 }
