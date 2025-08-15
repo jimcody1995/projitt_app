@@ -29,7 +29,7 @@ export function Scrollspy({
   // Sets active nav, hash, prevIdTracker, and calls onUpdate
   const setActiveSection = useCallback(
     (sectionId: string | null, force = false) => {
-      if (!sectionId) return;
+      if (!sectionId || typeof window === 'undefined') return;
       anchorElementsRef.current?.forEach((item) => {
         const id = item.getAttribute(`data-${dataAttribute}-anchor`);
         if (id === sectionId) {
@@ -48,7 +48,7 @@ export function Scrollspy({
   );
 
   const handleScroll = useCallback(() => {
-    if (!anchorElementsRef.current || anchorElementsRef.current.length === 0) return;
+    if (!anchorElementsRef.current || anchorElementsRef.current.length === 0 || typeof window === 'undefined') return;
     const scrollElement = targetRef?.current === document ? window : targetRef?.current;
     const scrollTop =
       scrollElement === window
@@ -100,6 +100,7 @@ export function Scrollspy({
   const scrollTo = useCallback(
     (anchorElement: HTMLElement) => (event?: Event) => {
       if (event) event.preventDefault();
+      if (typeof window === 'undefined') return;
       const sectionId =
         anchorElement.getAttribute(`data-${dataAttribute}-anchor`)?.replace('#', '') || null;
       if (!sectionId) return;
@@ -130,6 +131,7 @@ export function Scrollspy({
 
   // Scroll to the section if the ID is present in the URL hash
   const scrollToHashSection = useCallback(() => {
+    if (typeof window === 'undefined') return;
     const hash = CSS.escape(window.location.hash.replace('#', ''));
 
     if (hash) {
@@ -143,6 +145,9 @@ export function Scrollspy({
   }, [dataAttribute, scrollTo]);
 
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return;
+
     // Query elements and store them in the ref, avoiding unnecessary re-renders
     if (selfRef.current) {
       anchorElementsRef.current = Array.from(

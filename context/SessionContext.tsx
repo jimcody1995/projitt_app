@@ -44,6 +44,9 @@ export const SessionProvider = ({ children }: { children: ReactNode }): JSX.Elem
     const params = useParams();
     const path = usePathname();
     useEffect(() => {
+        // Only run on client side
+        if (typeof window === 'undefined') return;
+
         // const loadSession = async () => {
         //     setLoading(true);
         //     if (session.token) {

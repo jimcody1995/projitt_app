@@ -21,15 +21,27 @@ export default function MyApplications() {
   const [data, setData] = React.useState([]);
   const router = useRouter();
   const { session } = useSession();
-  const applicant_id = localStorage.getItem('applicantId');
+  const [applicant_id, setApplicantId] = React.useState<string | null>(null);
+
   const getJobData = async () => {
+    if (!applicant_id) return;
     const response = await getJobInfo(undefined, applicant_id);
     setData(response.data);
   }
 
   useEffect(() => {
-    getJobData();
+    // Only access localStorage on the client side
+    if (typeof window !== 'undefined') {
+      const storedApplicantId = localStorage.getItem('applicantId');
+      setApplicantId(storedApplicantId);
+    }
   }, []);
+
+  useEffect(() => {
+    if (applicant_id) {
+      getJobData();
+    }
+  }, [applicant_id]);
 
   const colors: Record<string, string> = {
     'Not Submitted': 'bg-[#e9e9e9]',
