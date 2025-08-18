@@ -13,7 +13,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
  */
 export function ThemeProvider({
   children,
-}: React.ComponentProps<typeof NextThemesProvider>): JSX.Element {
+}: React.ComponentProps<typeof NextThemesProvider>) {
   return (
     <NextThemesProvider
       attribute="class"
@@ -29,8 +29,6 @@ export function ThemeProvider({
       */}
       <TooltipProvider
         delayDuration={0}
-        id="global-tooltip-provider"
-        data-testid="global-tooltip-provider"
       >
         {children}
       </TooltipProvider>

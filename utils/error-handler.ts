@@ -34,10 +34,10 @@ export const handleError = (
 
         if (errorResponse && typeof errorResponse === 'object' && 'errors' in errorResponse) {
             const errors = errorResponse.errors;
-            const errorMessages = Object.values(errors)
+            const errorMessages = errors ? Object.values(errors)
                 .flat()
                 .filter((msg: unknown) => typeof msg === 'string')
-                .join(", ");
+                .join(", ") : "";
 
             if (errorMessages) {
                 errorMessage = errorMessages;

@@ -5,9 +5,6 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   // Packages that should be treated as external for server builds
   serverExternalPackages: [
     'pdfjs-dist',

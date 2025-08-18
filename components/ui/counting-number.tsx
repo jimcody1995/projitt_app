@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { animate, motion, useInView, UseInViewOptions, useMotionValue } from 'motion/react';
+import { animate, motion, useInView, UseInViewOptions, useMotionValue } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 interface CountingNumberProps {
@@ -45,7 +45,7 @@ export function CountingNumber({
     const timeout = setTimeout(() => {
       const controls = animate(motionValue, to, {
         duration,
-        onUpdate: (v) => setDisplay(v),
+        onUpdate: (v: number) => setDisplay(v),
         onComplete,
       });
       return () => controls.stop();

@@ -57,7 +57,7 @@ export default function ScreenShareLarge({ screenStream, showChat, onStopScreenS
             <div className="w-full lg:flex hidden gap-[24px] h-[154px] items-center justify-center overflow-x-auto">
                 {currentUsers && currentUsers.slice(0, 4).map((user, index) =>
                     <div key={index} className="w-[240px] h-[154px]">
-                        <SmallVideoForScreen user={user} isVideoEnabled={false} videoRef={null} />
+                        <SmallVideoForScreen user={user} isVideoEnabled={false} videoRef={useRef<HTMLVideoElement>(null)} />
                     </div>
                 )}
             </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { HTMLMotionProps, motion } from 'motion/react';
+import { HTMLMotionProps, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 type GridSize =
@@ -154,17 +154,17 @@ function GridBackground({
             style={{
               ...(beam.direction === 'horizontal'
                 ? {
-                    // Position exactly on the horizontal grid line
-                    top: `${horizontalPosition}%`,
-                    left: beam.startPosition === 'start' ? '-12px' : 'calc(100% + 12px)',
-                    transform: 'translateY(-50%)', // Center on the line
-                  }
+                  // Position exactly on the horizontal grid line
+                  top: `${horizontalPosition}%`,
+                  left: beam.startPosition === 'start' ? '-12px' : 'calc(100% + 12px)',
+                  transform: 'translateY(-50%)', // Center on the line
+                }
                 : {
-                    // Position exactly on the vertical grid line
-                    left: `${verticalPosition}%`,
-                    top: beam.startPosition === 'start' ? '-12px' : 'calc(100% + 12px)',
-                    transform: 'translateX(-50%)', // Center on the line
-                  }),
+                  // Position exactly on the vertical grid line
+                  left: `${verticalPosition}%`,
+                  top: beam.startPosition === 'start' ? '-12px' : 'calc(100% + 12px)',
+                  transform: 'translateX(-50%)', // Center on the line
+                }),
             }}
             initial={{
               opacity: 0,
@@ -173,19 +173,19 @@ function GridBackground({
               opacity: [0, 1, 1, 0],
               ...(beam.direction === 'horizontal'
                 ? {
-                    // Move across the full width of the container
-                    x:
-                      beam.startPosition === 'start'
-                        ? [0, 'calc(100vw + 24px)']
-                        : [0, 'calc(-100vw - 24px)'],
-                  }
+                  // Move across the full width of the container
+                  x:
+                    beam.startPosition === 'start'
+                      ? [0, 'calc(100vw + 24px)']
+                      : [0, 'calc(-100vw - 24px)'],
+                }
                 : {
-                    // Move across the full height of the container
-                    y:
-                      beam.startPosition === 'start'
-                        ? [0, 'calc(100vh + 24px)']
-                        : [0, 'calc(-100vh - 24px)'],
-                  }),
+                  // Move across the full height of the container
+                  y:
+                    beam.startPosition === 'start'
+                      ? [0, 'calc(100vh + 24px)']
+                      : [0, 'calc(-100vh - 24px)'],
+                }),
             }}
             transition={{
               duration: beam.duration,

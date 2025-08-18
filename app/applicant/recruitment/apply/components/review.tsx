@@ -5,8 +5,8 @@ import { getApplicantInfo, getQuestions } from '@/api/applicant';
 import { customToast } from '@/components/common/toastr';
 
 interface ReviewProps {
-  jobId?: string;
-  applicantId?: string;
+  jobId?: string | null;
+  applicantId?: string | null;
   setLoading: (loading: boolean) => void;
 }
 

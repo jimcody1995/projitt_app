@@ -14,7 +14,7 @@ import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
  * @param {ReactNode} props.children - Components wrapped by this provider
  * @returns JSX.Element - QueryClientProvider wrapping children with configured client
  */
-const QueryProvider = ({ children }: { children: ReactNode }): JSX.Element => {
+const QueryProvider = ({ children }: { children: ReactNode }) => {
   const [queryClient] = useState(
     () =>
       new QueryClient({

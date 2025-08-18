@@ -36,11 +36,11 @@ import { Switch } from '@/components/ui/switch';
 
 export function DropdownMenuUser({ trigger }: { trigger: ReactNode }) {
   const { data: session } = useSession();
-  const { changeLanguage, language } = useLanguage();
+  const { setLanguage, language } = useLanguage();
   const { theme, setTheme } = useTheme();
 
-  const handleLanguage = (lang: Language) => {
-    changeLanguage(lang.code);
+  const handleLanguage = (lang: string) => {
+    setLanguage(lang);
   };
 
   const handleThemeToggle = (checked: boolean) => {
@@ -57,7 +57,7 @@ export function DropdownMenuUser({ trigger }: { trigger: ReactNode }) {
             <img
               className="w-9 h-9 rounded-full border border-border"
               src={toAbsoluteUrl(
-                session?.user.avatar || '/media/avatars/300-2.png',
+                session?.user?.image || '/media/avatars/300-2.png',
               )}
               alt="User avatar"
             />
@@ -66,13 +66,13 @@ export function DropdownMenuUser({ trigger }: { trigger: ReactNode }) {
                 href="/account/home/get-started"
                 className="text-sm text-mono hover:text-primary font-semibold"
               >
-                {session?.user.name || ''}
+                {session?.user?.name || ''}
               </Link>
               <Link
                 href="mailto:c.fisher@gmail.com"
                 className="text-xs text-muted-foreground hover:text-primary"
               >
-                {session?.user.email || ''}
+                {session?.user?.email || ''}
               </Link>
             </div>
           </div>
@@ -187,23 +187,23 @@ export function DropdownMenuUser({ trigger }: { trigger: ReactNode }) {
                 variant="outline"
                 className="absolute end-0 top-1/2 -translate-y-1/2"
               >
-                {language.name}
+                {typeof language === 'string' ? language : 'English'}
                 <img
-                  src={language.flag}
+                  src="/media/flags/united-states.svg"
                   className="w-3.5 h-3.5 rounded-full"
-                  alt={language.name}
+                  alt="Language flag"
                 />
               </Badge>
             </span>
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent className="w-48">
             <DropdownMenuRadioGroup
-              value={language.code}
+              value={typeof language === 'string' ? language : 'en'}
               onValueChange={(value) => {
                 const selectedLang = I18N_LANGUAGES.find(
                   (lang) => lang.code === value,
                 );
-                if (selectedLang) handleLanguage(selectedLang);
+                if (selectedLang) handleLanguage(selectedLang.code);
               }}
             >
               {I18N_LANGUAGES.map((item) => (

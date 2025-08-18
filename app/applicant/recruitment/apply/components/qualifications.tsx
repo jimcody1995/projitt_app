@@ -35,6 +35,7 @@ export interface QualificationsRef {
 }
 
 interface WorkExperience {
+  id?: string;
   job_title: string;
   company: string;
   location: string;
@@ -45,17 +46,21 @@ interface WorkExperience {
 }
 
 interface Education {
+  id?: string;
   school: string;
   degree: string;
   fieldOfStudy: string;
 }
 
 interface Certifications {
+  id?: string;
   certification: string;
   certificationNumber: string;
   issueDate: Date;
   expiryDate: Date;
 }
+
+type Certificate = Certifications;
 
 interface OtherLink {
   title: string;
@@ -140,7 +145,7 @@ const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(functi
       // Initialize work experience
       if (applicantInfo.work_experience && applicantInfo.work_experience.length > 0) {
         const formattedWorkExperience = applicantInfo.work_experience.map((work) => ({
-          id: work.id,
+          id: work.id ? String(work.id) : undefined,
           job_title: work.job_title || '',
           company: work.company || '',
           location: work.location || '',
@@ -155,7 +160,7 @@ const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(functi
       // Initialize education
       if (applicantInfo.education && applicantInfo.education.length > 0) {
         const formattedEducation = applicantInfo.education.map((edu) => ({
-          id: edu.id,
+          id: edu.id ? String(edu.id) : undefined,
           school: edu.school || '',
           degree: edu.degree_id?.toString() || '',
           fieldOfStudy: edu.field_of_study || '',
@@ -166,7 +171,7 @@ const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(functi
       // Initialize certifications
       if (applicantInfo.certificate && applicantInfo.certificate.length > 0) {
         const formattedCertifications = applicantInfo.certificate.map((cert) => ({
-          id: cert.id,
+          id: cert.id ? String(cert.id) : undefined,
           certification: cert.title || '',
           certificationNumber: cert.number || '',
           issueDate: cert.issued_date ? new Date(cert.issued_date) : new Date(),
@@ -272,7 +277,7 @@ const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(functi
   const handleRemoveWorkExperience = async (index: number, work: WorkExperience) => {
     if (work.id) {
       try {
-        await applicantExperienceDelete(work.id);
+        await applicantExperienceDelete(Number(work.id));
         setWorkExperience(workExperience.filter((_, i) => i !== index));
       } catch (error: any) {
         customToast('Error removing work experience', error?.response?.data?.message as string, 'error');
@@ -287,7 +292,7 @@ const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(functi
   const handleRemoveCertification = async (index: number, cert: Certificate) => {
     if (cert.id) {
       try {
-        await applicantCertificateDelete(cert.id);
+        await applicantCertificateDelete(Number(cert.id));
         setCertifications(certifications.filter((_, i) => i !== index));
       } catch (error: any) {
         customToast('Error removing certification', error?.response?.data?.message as string, 'error');
@@ -302,7 +307,7 @@ const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(functi
   const handleRemoveEducation = async (index: number, edu: Education) => {
     if (edu.id) {
       try {
-        await applicantEducationDelete(edu.id);
+        await applicantEducationDelete(Number(edu.id));
         setEducation(education.filter((_, i) => i !== index));
       } catch (error: any) {
         customToast('Error removing education', error?.response?.data?.message as string, 'error');

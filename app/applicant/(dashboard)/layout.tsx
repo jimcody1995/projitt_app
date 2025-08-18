@@ -85,7 +85,10 @@ export default function Layout({ children }: { children: React.ReactNode }): JSX
               id="avatar-initials"
               data-test-id="avatar-initials"
             >
-              {session?.full_name?.split(' ')[0].charAt(0).toUpperCase() + session?.full_name?.split(' ')[1].charAt(0).toUpperCase()}
+              {session?.full_name ?
+                (session.full_name.split(' ')[0]?.charAt(0)?.toUpperCase() || '') +
+                (session.full_name.split(' ')[1]?.charAt(0)?.toUpperCase() || '')
+                : ''}
             </span>
           </div>
           <span

@@ -13,12 +13,10 @@ export function TooltipsProvider({
   children,
 }: {
   children: ReactNode;
-}): JSX.Element {
+}) {
   return (
     <TooltipProvider
       delayDuration={0}
-      id="global-tooltips-wrapper"
-      data-testid="global-tooltips-wrapper"
     >
       {children}
     </TooltipProvider>

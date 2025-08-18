@@ -13,7 +13,7 @@ import { updateApplicantEmail } from '@/api/applicant';
  */
 export default function Settings() {
   const { session } = useSession();
-  const [newEmail, setNewEmail] = React.useState(session.email);
+  const [newEmail, setNewEmail] = React.useState<string>(session.email || '');
   /**
    * Renders the settings form to change the user's email address.
    * Includes current email, new email input, and a submission button.

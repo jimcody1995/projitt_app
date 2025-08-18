@@ -25,7 +25,13 @@ export default function ApplicationDetails({ params }: { params: Promise<{ id: s
   const [loading, setLoading] = useState(false);
   const [jobId, setJobId] = useState<string>('');
   const [applicantId, setApplicantId] = useState<string>('');
-  const { country } = useBasic()
+  const { country } = useBasic();
+  // Define the country item type
+  type CountryItem = {
+    id: number;
+    name: string;
+    [key: string]: any;
+  };
 
   // Handle async params and localStorage
   useEffect(() => {
@@ -127,7 +133,7 @@ export default function ApplicationDetails({ params }: { params: Promise<{ id: s
                 data-testid="job-location"
               >
                 <MapPin className="size-[16px]" />
-                {country.find((item: any) => item.id === applicantInfo?.job?.country_id)?.name}
+                {country && country.length > 0 ? (country as CountryItem[]).find(item => item.id === applicantInfo?.job?.country_id)?.name || 'Unknown' : 'Unknown'}
               </span>
               <span
                 className="text-[12px]/[18px] flex items-center gap-[2px] text-[#787878]"

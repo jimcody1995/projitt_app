@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useRef } from 'react';
-import { motion, useInView, UseInViewOptions } from 'motion/react';
+import { motion, useInView, UseInViewOptions } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 interface ShimmeringTextProps {
@@ -82,9 +82,9 @@ export function ShimmeringText({
       animate={
         shouldAnimate
           ? {
-              backgroundPosition: '0% center',
-              opacity: 1,
-            }
+            backgroundPosition: '0% center',
+            opacity: 1,
+          }
           : {}
       }
       transition={{

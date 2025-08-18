@@ -43,6 +43,7 @@ export interface QuestionsRef {
 interface QuestionsProps {
   jobId: string | null;
   applicantId: string | null;
+  setLoading?: (loading: boolean) => void;
 }
 
 const Questions = forwardRef<QuestionsRef, QuestionsProps>(({ jobId, applicantId }, ref) => {

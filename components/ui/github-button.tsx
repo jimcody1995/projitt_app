@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Star } from 'lucide-react';
-import { motion, useInView, type SpringOptions, type UseInViewOptions } from 'motion/react';
+import { motion, useInView, type SpringOptions, type UseInViewOptions } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 const githubButtonVariants = cva(
@@ -30,7 +30,7 @@ const githubButtonVariants = cva(
 
 interface GithubButtonProps
   extends React.ComponentProps<'button'>,
-    VariantProps<typeof githubButtonVariants> {
+  VariantProps<typeof githubButtonVariants> {
   /** Whether to round stars */
   roundStars?: boolean;
   /** Whether to show Github icon */

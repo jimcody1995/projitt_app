@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { AvatarGroup } from '../../../partials/common/avatar-group';
+import { AvatarGroup } from '@/components/ui/avatar-group-simple';
 import { toAbsoluteUrl } from '@/lib/helpers';
 import {
   AccordionMenu,
@@ -57,7 +57,11 @@ export function SearchIntegrations({
 
                 {/* Team avatars */}
                 <div className="flex justify-end shrink-0">
-                  <AvatarGroup group={item.team} />
+                  <AvatarGroup group={item.team.map(avatar => ({
+                    path: avatar.filename,
+                    fallback: avatar.fallback,
+                    variant: avatar.variant
+                  }))} />
                 </div>
               </div>
             </AccordionMenuItem>

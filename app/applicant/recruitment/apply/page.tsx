@@ -136,7 +136,7 @@ export default function Apply() {
           try {
             setLoading(true);
             const response = await qualificationsRef.current.saveQualifications();
-            if (response.data.status) {
+            if (response && typeof response === 'object' && 'data' in response && response.data && typeof response.data === 'object' && 'status' in response.data && response.data.status) {
               setCurrentStep(currentStep + 1);
             }
             setLoading(false);
@@ -244,7 +244,6 @@ export default function Apply() {
                 <ContactInfo
                   ref={contactInfoRef}
                   onValidationChange={(isValid, data) => handleStepDataChange('contactInfo', data)}
-                  id="contact-info-step"
                   data-testid="contact-info-step"
                   jobId={jobId}
                   applicantId={applicantId}

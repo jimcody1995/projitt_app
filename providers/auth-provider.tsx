@@ -17,7 +17,7 @@ interface AuthProviderProps {
  * @param {Session | null} [props.session] - Optional current user session
  * @returns JSX.Element - The SessionProvider wrapping children
  */
-export function AuthProvider({ children, session }: AuthProviderProps): JSX.Element {
+export function AuthProvider({ children, session }: AuthProviderProps) {
   const basePath =
     (typeof window !== 'undefined'
       ? process.env.NEXT_PUBLIC_BASE_PATH

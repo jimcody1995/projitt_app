@@ -52,7 +52,7 @@ export function EditableSelect({
     // Check if current value is custom (not in options)
     React.useEffect(() => {
         const isCustom = value && !options.find(option => option.value === value);
-        setIsCustomMode(isCustom);
+        setIsCustomMode(isCustom ? true : false);
         if (isCustom) {
             setCustomValue(value);
         }

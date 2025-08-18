@@ -25,7 +25,7 @@ export default function TagInput({
     setTags: (tags: string[]) => void;
     suggestions?: Suggestion[];
     restrictToSuggestions?: boolean;
-}): JSX.Element {
+}) {
     const [inputValue, setInputValue] = useState("");
     const [showDropdown, setShowDropdown] = useState(false);
     const [error, setError] = useState("");

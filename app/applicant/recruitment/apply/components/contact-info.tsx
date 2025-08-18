@@ -23,8 +23,8 @@ import { useSession } from '@/context/SessionContext';
  * It provides unique data-testid locators for UI elements to aid in test automation.
  */
 interface ContactInfoProps {
-  jobId: string;
-  applicantId: string;
+  jobId: string | null;
+  applicantId: string | null;
   onValidationChange?: (isValid: boolean, data: any) => void;
   setLoading?: (loading: boolean) => void;
 }
@@ -61,7 +61,7 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean; getData: () => a
 
     const getApplicantInfoData = async () => {
       try {
-        setLoading(true);
+        if (setLoading) setLoading(true);
         const response = await getApplicantInfo(jobId as string, applicantId as string);
         if (response.status === true) {
           setApplicantInfo(response.data);
@@ -69,7 +69,7 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean; getData: () => a
       } catch (error: any) {
         customToast('Error fetching applicant info', error?.response?.data?.message as string, 'error');
       } finally {
-        setLoading(false);
+        if (setLoading) setLoading(false);
       }
     };
     useEffect(() => {

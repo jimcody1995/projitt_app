@@ -29,8 +29,8 @@ interface ResumeRef {
 
 const Resume = forwardRef<ResumeRef, {
   onValidationChange: (isValid: boolean, data: ResumeData) => void;
-  jobId?: string;
-  applicantId?: string;
+  jobId?: string | null;
+  applicantId?: string | null;
   setLoading?: (loading: boolean) => void;
 }>(({ onValidationChange, jobId, applicantId, setLoading }, ref) => {
   const [resume, setResume] = React.useState<File | null>(null);
@@ -57,7 +57,7 @@ const Resume = forwardRef<ResumeRef, {
   // Fetch applicant info on component mount
   React.useEffect(() => {
     const getApplicantInfoData = async () => {
-      setLoading(true);
+      if (setLoading) setLoading(true);
       if (!jobId || !applicantId) return;
       try {
         const response = await getApplicantInfo(jobId, applicantId);
@@ -80,11 +80,11 @@ const Resume = forwardRef<ResumeRef, {
             }
           }
         }
-        setLoading(false);
+        if (setLoading) setLoading(false);
       } catch (error: any) {
         customToast('Error fetching applicant info', error?.response?.data?.message as string, 'error');
       } finally {
-        setLoading(false);
+        if (setLoading) setLoading(false);
       }
     };
     getApplicantInfoData();
