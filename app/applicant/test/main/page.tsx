@@ -24,19 +24,19 @@ export default function Main() {
                 { id: 4, text: "Agree", isCorrect: false },
                 { id: 5, text: "Strongly Agree", isCorrect: false },
             ],
-            answer: null,
+            answer: null as number | string | null,
         },
         {
             id: 2,
             question: "Describe how you would handle an overbearing superior at work.",
             type: 'longText',
-            answer: null,
+            answer: null as number | string | null,
         },
         {
             id: 3,
             question: "Describe how you would handle an overbearing superior at work.",
             type: 'longText',
-            answer: null,
+            answer: null as number | string | null,
         },
     ]);
     const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -124,7 +124,16 @@ export default function Main() {
                 <div className="mt-[11px] flex flex-col gap-[8px]">
                     {(questions[currentQuestion].options || []).map((option) => (
                         <div key={option.id} className="flex items-center gap-[8px]">
-                            <div className={`border border-[#e2e4e2] w-[28px] h-[28px] rounded-full flex justify-center items-center cursor-pointer ${questions[currentQuestion].answer === option.id ? 'bg-[#0d978b] text-white' : ''}`} onClick={() => { questions[currentQuestion].answer = option.id }}>{String.fromCharCode(96 + option.id)}</div>
+                            <div className={`border border-[#e2e4e2] w-[28px] h-[28px] rounded-full flex justify-center items-center cursor-pointer ${questions[currentQuestion].answer === option.id ? 'bg-[#0d978b] text-white' : ''}`} onClick={() => {
+                                setQuestions(prevQuestions => {
+                                    const updatedQuestions = [...prevQuestions];
+                                    updatedQuestions[currentQuestion] = {
+                                        ...updatedQuestions[currentQuestion],
+                                        answer: option.id
+                                    };
+                                    return updatedQuestions;
+                                });
+                            }}>{String.fromCharCode(96 + option.id)}</div>
                             <p className="text-[#1c1c1c] text-[16px]">{option.text}</p>
                         </div>
                     ))}
@@ -132,7 +141,16 @@ export default function Main() {
             )}
             {questions[currentQuestion].type === 'longText' && (
                 <div className="mt-[22px]">
-                    <Textarea name="" id="" cols={30} rows={10} value={questions[currentQuestion].answer || ''} onChange={(e) => { questions[currentQuestion].answer = e.target.value }}></Textarea>
+                    <Textarea name="" id="" cols={30} rows={10} value={questions[currentQuestion].answer || ''} onChange={(e) => {
+                        setQuestions(prevQuestions => {
+                            const updatedQuestions = [...prevQuestions];
+                            updatedQuestions[currentQuestion] = {
+                                ...updatedQuestions[currentQuestion],
+                                answer: e.target.value
+                            };
+                            return updatedQuestions;
+                        });
+                    }}></Textarea>
                 </div>
             )}
 
