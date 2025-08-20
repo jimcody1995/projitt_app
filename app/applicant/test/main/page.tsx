@@ -10,7 +10,7 @@ import { javascript } from "@codemirror/lang-javascript";
 
 export default function Main() {
     const router = useRouter();
-    const [testType, setTestType] = useState('cognitive');
+    const [testType, setTestType] = useState('cognitive'); //cognitive, coding
 
     const [questions, setQuestions] = useState([
         {
