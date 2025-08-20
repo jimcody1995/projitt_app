@@ -64,7 +64,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }): JSX.Elem
         //     } else {
         setSessionState({ token: null, authenticated: false, full_name: null, email: null });
         setTimeout(() => setLoading(false), 1000);
-        if (window.location.pathname.startsWith('/meeting')) {
+        if (window.location.pathname.startsWith('/meeting') || window.location.pathname.startsWith('/applicant/test')) {
             return
         }
         else if (window.location.pathname !== '/' && window.location.pathname !== '/applicant/recruitment/signin') {

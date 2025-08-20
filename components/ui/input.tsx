@@ -16,9 +16,9 @@ const inputVariants = cva(
   {
     variants: {
       variant: {
-        lg: 'h-10 px-4 text-sm rounded-md file:pe-4 file:me-4',
+        lg: 'h-10 px-4 text-sm rounded-[10px] file:pe-4 file:me-4',
         md: 'h-8.5 px-3 text-[0.8125rem] leading-(--text-sm--line-height) rounded-[10px] file:pe-3 file:me-3',
-        sm: 'h-7 px-2.5 text-xs rounded-md file:pe-2.5 file:me-2.5',
+        sm: 'h-7 px-2.5 text-xs rounded-[10px] file:pe-2.5 file:me-2.5',
       },
     },
     defaultVariants: {
@@ -32,9 +32,9 @@ const inputAddonVariants = cva(
   {
     variants: {
       variant: {
-        sm: 'rounded-md h-7 min-w-7 text-xs px-2.5 [&_svg:not([class*=size-])]:size-3.5',
-        md: 'rounded-md h-8.5 min-w-8.5 px-3 text-[0.8125rem] leading-(--text-sm--line-height) [&_svg:not([class*=size-])]:size-4.5',
-        lg: 'rounded-md h-10 min-w-10 px-4 text-sm [&_svg:not([class*=size-])]:size-4.5',
+        sm: 'rounded-[10px] h-7 min-w-7 text-xs px-2.5 [&_svg:not([class*=size-])]:size-3.5',
+        md: 'rounded-[10px] h-8.5 min-w-8.5 px-3 text-[0.8125rem] leading-(--text-sm--line-height) [&_svg:not([class*=size-])]:size-4.5',
+        lg: 'rounded-[10px] h-10 min-w-10 px-4 text-sm [&_svg:not([class*=size-])]:size-4.5',
       },
       mode: {
         default: '',
