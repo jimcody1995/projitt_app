@@ -3,15 +3,20 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, EllipsisVertical, Play } from "lucide-react";
 import CodeMirror from "@uiw/react-codemirror";
 import { javascript } from "@codemirror/lang-javascript";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export default function Main() {
     const router = useRouter();
     const [testType, setTestType] = useState('cognitive'); //cognitive, coding
-
+    const params = useSearchParams();
+    const camera = params.get('camera');
+    const microphone = params.get('microphone');
+    const [isVideoEnabled, setIsVideoEnabled] = useState(false);
+    const [isMicEnabled, setIsMicEnabled] = useState(false);
     const [questions, setQuestions] = useState([
         {
             id: 1,
@@ -61,15 +66,77 @@ export default function Main() {
     }
 
     const [hasVideoPermission, setHasVideoPermission] = useState(false);
+    const [hasMicPermission, setHasMicPermission] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
 
+    // Drag functionality state
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+    const [videoPosition, setVideoPosition] = useState({ x: 40, y: 40 });
+
+    // Set initial position to bottom-right corner after component mounts
+    useEffect(() => {
+        const setInitialPosition = () => {
+            setVideoPosition({
+                x: window.innerWidth - 307 - 40, // 40px from right edge
+                y: window.innerHeight - 197 - 40  // 40px from bottom edge
+            });
+        };
+
+        setInitialPosition();
+
+        // Update position on window resize to maintain relative positioning
+        const handleResize = () => {
+            setVideoPosition(prev => ({
+                x: Math.min(prev.x, window.innerWidth - 307),
+                y: Math.min(prev.y, window.innerHeight - 197)
+            }));
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const requestMicPermission = async () => {
+        try {
+            setIsLoading(true);
+            // Get both audio and video streams to combine them
+            const constraints = {
+                audio: true,
+                video: hasVideoPermission ? {
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                } : false
+            };
+
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            setHasMicPermission(true);
+            setIsMicEnabled(true);
+
+            // If we already have video permission, update the video element
+            if (hasVideoPermission && videoRef.current) {
+                videoRef.current.srcObject = stream;
+            }
+
+            streamRef.current = stream;
+        } catch (error) {
+            console.error('Microphone permission denied:', error);
+            setHasMicPermission(false);
+            setIsMicEnabled(false);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Request video permission
     const requestVideoPermission = async () => {
         try {
             setIsLoading(true);
+            // Get both audio and video streams to combine them
             const constraints = {
-                audio: true,
+                audio: hasMicPermission ? true : false,
                 video: {
                     width: { ideal: 1280 },
                     height: { ideal: 720 }
@@ -78,35 +145,206 @@ export default function Main() {
 
             const stream = await navigator.mediaDevices.getUserMedia(constraints);
             setHasVideoPermission(true);
+            setIsVideoEnabled(true);
 
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
             }
 
+            // If we already have a stream with audio, merge the new video track
+            if (streamRef.current && streamRef.current.getAudioTracks().length > 0) {
+                const videoTrack = stream.getVideoTracks()[0];
+                if (videoTrack) {
+                    streamRef.current.addTrack(videoTrack);
+                    console.log("Added video track to existing audio stream");
+                }
+            } else {
+                streamRef.current = stream;
+                console.log("Set new stream as main stream");
+            }
         } catch (error) {
             console.error('Camera permission denied:', error);
             setHasVideoPermission(false);
+            setIsVideoEnabled(false);
         } finally {
             setIsLoading(false);
         }
     };
 
+    // Toggle microphone
+    const toggleMic = async () => {
+        if (!hasMicPermission) {
+            await requestMicPermission();
+        } else {
+            const newMicState = !isMicEnabled;
+            setIsMicEnabled(newMicState);
+            if (streamRef.current) {
+                const audioTrack = streamRef.current.getAudioTracks()[0];
+                if (audioTrack) {
+                    audioTrack.enabled = newMicState;
+                }
+            }
+        }
+    };
+
+    // Toggle video
+    const toggleVideo = async () => {
+        if (!hasVideoPermission) {
+            await requestVideoPermission();
+        } else {
+            const newVideoState = !isVideoEnabled;
+            setIsVideoEnabled(newVideoState);
+
+            if (streamRef.current) {
+                const videoTrack = streamRef.current.getVideoTracks()[0];
+
+                if (videoTrack) {
+                    if (newVideoState) {
+                        videoTrack.enabled = true;
+                        if (videoRef.current) {
+                            videoRef.current.srcObject = streamRef.current;
+                        }
+                    } else {
+                        // Turning off video - stop the video track completely
+                        console.log("Stopping and removing video track");
+                        videoTrack.stop();
+                        if (videoRef.current) {
+                            videoRef.current.srcObject = null;
+                        }
+
+                        // Remove the stopped track from the stream
+                        streamRef.current.removeTrack(videoTrack);
+
+                        // If we still have audio, keep the stream, otherwise clear it
+                        if (streamRef.current.getAudioTracks().length > 0) {
+                            console.log("Keeping audio stream");
+                        } else {
+                            console.log("Clearing stream (no tracks left)");
+                            streamRef.current = null;
+                        }
+                    }
+                } else if (newVideoState) {
+                    // No video track but trying to turn on - need to request new video permission
+                    console.log("No video track found, requesting new video permission");
+                    await requestVideoPermission();
+                }
+            } else if (newVideoState) {
+                // No stream at all but trying to turn on video
+                console.log("No stream found, requesting new video permission");
+                await requestVideoPermission();
+            }
+        }
+    };
+
+    // Update video element when stream changes
     useEffect(() => {
-        requestVideoPermission();
-    }, [videoRef.current]);
+        if (streamRef.current && videoRef.current && hasVideoPermission && isVideoEnabled) {
+            videoRef.current.srcObject = streamRef.current;
+        } else if (videoRef.current && (!isVideoEnabled || !hasVideoPermission)) {
+            // Clear video when disabled or no permission
+            videoRef.current.srcObject = null;
+        }
+    }, [hasVideoPermission, isVideoEnabled]);
+
+    const handleTurnOffCamera = () => {
+        if (!streamRef.current) return;
+        const videoTrack = streamRef.current.getVideoTracks()[0];
+        console.log(videoTrack + "safsdf");
+
+        videoTrack.stop();
+        if (videoRef.current) {
+            videoRef.current.srcObject = null;
+        }
+
+        // Remove the stopped track from the stream
+        streamRef.current?.removeTrack(videoTrack);
+
+        // If we still have audio, keep the stream, otherwise clear it
+    }
+
+    useEffect(() => {
+        if (camera === 'true' && !isVideoEnabled) {
+            requestVideoPermission();
+        }
+        return () => handleTurnOffCamera()
+    }, [videoRef.current, camera]);
+
+    // Drag functionality handlers
+    const handleMouseDown = (e: React.MouseEvent) => {
+        setIsDragging(true);
+        setDragOffset({
+            x: e.clientX - videoPosition.x,
+            y: e.clientY - videoPosition.y
+        });
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+        if (!isDragging) return;
+
+        const newX = e.clientX - dragOffset.x;
+        const newY = e.clientY - dragOffset.y;
+
+        // Optional: Add boundary constraints to keep video within viewport
+        const maxX = window.innerWidth - 307; // video width
+        const maxY = window.innerHeight - 197; // video height
+
+        setVideoPosition({
+            x: Math.max(0, Math.min(newX, maxX)),
+            y: Math.max(0, Math.min(newY, maxY))
+        });
+    };
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    useEffect(() => {
+        if (isDragging) {
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        }
+
+        return () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDragging, dragOffset]);
+
 
     // Toggle microphone
 
 
     return <div className="xl:w-[1163px] w-full h-full flex flex-col max-h-[700px] bg-white border border-[#e7e9ed] rounded-[12px]">
-        {hasVideoPermission && <div className="absolute bottom-[40px] overflow-hidden border border-[#293042] right-[40px] flex justify-center items-center z-[4] w-[307px] h-[197px] rounded-[16px] bg-[#11131A]">
-            <div className="absolute bottom-[8px] left-[8px] py-[4px] px-[8px] text-[14px]/[20px]  text-white bg-[#000000A3] rounded-[8px]">
+        {camera === 'true' && <div
+            className={`fixed overflow-hidden border border-[#293042] flex justify-center items-center z-[4] w-[307px] h-[197px] rounded-[16px] bg-[#11131A] ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} select-none`}
+            style={{
+                left: `${videoPosition.x}px`,
+                top: `${videoPosition.y}px`
+            }}
+            onMouseDown={handleMouseDown}
+        >
+            <div className="absolute bottom-[8px] left-[8px] py-[4px] px-[8px] text-[14px]/[20px]  text-white bg-[#000000A3] rounded-[8px] pointer-events-none">
                 James Lee
             </div>
-            <div className="absolute bottom-[8px] right-[8px] p-[4px] text-[14px]/[20px]  text-white bg-[#000000A3] rounded-[8px]">
-                <EllipsisVertical className="size-[20px]"></EllipsisVertical>
+            <div className="absolute bottom-[8px] right-[8px] p-[4px] text-[14px]/[20px]  text-white bg-[#000000A3] rounded-[8px] pointer-events-auto cursor-pointer"
+                onClick={(e) => e.stopPropagation()}>
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <EllipsisVertical className="size-[20px]"></EllipsisVertical>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[150px] p-0 py-[10px]">
+                        <div className="flex flex-col gap-[8px]">
+                            <div className="py-[8px] px-[10px] text-[14px]/[20px] hover:bg-[#a5a5a5a3]" onClick={toggleVideo}>
+                                Show Video
+                            </div>
+                            <div className="py-[8px] px-[10px] text-[14px]/[20px] hover:bg-[#a5a5a5a3]" onClick={toggleMic}>
+                                Show Microphone
+                            </div>
+                        </div>
+                    </PopoverContent>
+                </Popover>
             </div>
-            <video ref={videoRef} autoPlay playsInline muted className="h-full object-cover " />
+            <video ref={videoRef} autoPlay playsInline muted className="h-full object-cover pointer-events-none" />
         </div>
         }
         <div className="pt-[28px] px-[52px] pb-[24px] w-full flex justify-between items-center">

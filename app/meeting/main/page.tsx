@@ -366,7 +366,7 @@ export default function MeetingMain() {
                 }
                 {
                     (showChat || isShareScreen) &&
-                    <div className={`${isShareScreen && showChat === false ? "md:flex hidden" : "flex"} md:w-[400px] w-full md:h-[calc(100vh-192px)] h-[calc(100vh-326px)] flex-col gap-[24px]`}>
+                    <div className={`${isShareScreen && showChat === false ? "md:flex hidden" : "flex"}  md:w-[400px] w-full md:h-[calc(100vh-192px)] h-[calc(100vh-326px)] flex-col gap-[24px]`}>
                         {isShareScreen && <div className="h-[225px]">
                             <SmallVideo isVideoEnabled={isVideoEnabled} videoRef={videoRef} />
                         </div>}

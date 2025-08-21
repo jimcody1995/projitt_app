@@ -22,7 +22,7 @@ export default function CheckingCamera() {
 
         // Simulate loading for 1-2 seconds
         setTimeout(() => {
-            router.push('/applicant/test/ready');
+            router.push(`/applicant/test/ready/?camera=${isVideoEnabled}&microphone=${isMicEnabled}`);
         }, 1500); // 1.5 seconds
     };
 
@@ -118,22 +118,16 @@ export default function CheckingCamera() {
     // Toggle video
     const toggleVideo = async () => {
         if (!hasVideoPermission) {
-            console.log("No video permission, requesting...");
             await requestVideoPermission();
         } else {
             const newVideoState = !isVideoEnabled;
-            console.log("Toggling video to:", newVideoState);
             setIsVideoEnabled(newVideoState);
 
             if (streamRef.current) {
-                console.log("streamRef.current", streamRef.current);
                 const videoTrack = streamRef.current.getVideoTracks()[0];
-                console.log("videoTrack", videoTrack);
 
                 if (videoTrack) {
                     if (newVideoState) {
-                        // Turning on video - enable the track
-                        console.log("Enabling existing video track");
                         videoTrack.enabled = true;
                         if (videoRef.current) {
                             videoRef.current.srcObject = streamRef.current;
@@ -188,7 +182,7 @@ export default function CheckingCamera() {
             }
         };
     }, []);
-    return <div className="w-[480px] flex flex-col items-center" >
+    return <div className="sm:w-[480px] w-full flex flex-col items-center" >
         <p className="text-[#4b4b4b] text-[34px]/[40px] font-semibold mt-[40px]">Get Started</p>
         <p className="text-[16px]/[24px] text-[#787878] mt-[8px]">Setup your audio and video before joining</p>
         {/* Video/Preview Area */}
