@@ -16,25 +16,7 @@ export default function MeetingMain() {
     const [isVideoEnabled, setIsVideoEnabled] = useState(false);
     const [hasMicPermission, setHasMicPermission] = useState(false);
     const [hasVideoPermission, setHasVideoPermission] = useState(false);
-    const [currentUsers, setCurrentUsers] = useState([{
-        name: 'Cristiano Ronaldo',
-        avatar: '',
-        id: '',
-    }, {
-        name: 'Kamal Hossain',
-        avatar: '',
-        id: '',
-    },
-    {
-        name: 'Rita Black',
-        avatar: '',
-        id: '',
-    },
-    {
-        name: 'Rita Black',
-        avatar: '',
-        id: '',
-    }
+    const [currentUsers, setCurrentUsers] = useState([
     ]);
     const [isShareScreen, setIsShareScreen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -43,13 +25,32 @@ export default function MeetingMain() {
     const [selectedEmoji, setSelectedEmoji] = useState<string>("");
     const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
     const [isScreenSharePopoverOpen, setIsScreenSharePopoverOpen] = useState(false);
+    const [animatedEmojis, setAnimatedEmojis] = useState<Array<{ id: number, emoji: string, x: number, y: number }>>([]);
+    const [isEmojiPopoverOpen, setIsEmojiPopoverOpen] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
     const router = useRouter();
 
     const handleEmojiSelect = (emoji: string) => {
         setSelectedEmoji(emoji);
-        // Here you can add logic to send the emoji to other participants
+
+        // Create a new animated emoji with random position near bottom center
+        const newEmojiAnimation = {
+            id: Date.now() + Math.random(),
+            emoji: emoji,
+            x: Math.random() * 5 + 2, // Random x position between 30% and 70% (center area)
+            y: 110 // Random y position between 70% and 90% (bottom area)
+        };
+
+        setAnimatedEmojis(prev => [...prev, newEmojiAnimation]);
+
+        // Remove the emoji after animation completes (3 seconds)
+        setTimeout(() => {
+            setAnimatedEmojis(prev => prev.filter(e => e.id !== newEmojiAnimation.id));
+        }, 3000);
+
+        // Close the emoji popover
+
         console.log("Selected emoji:", emoji);
     };
 
@@ -302,7 +303,7 @@ export default function MeetingMain() {
     }, [isShareScreen, currentUsers.length]);
     return (
         <div className="w-full h-[100vh] flex flex-col justify-between bg-black p-[24px] gap-[24px]">
-            <div className="w-full flex justify-between items-center">
+            <div className="flex-1 flex justify-between items-center">
                 <div className="flex gap-[24px] items-center">
                     <img src="/images/logo-noletter.svg" alt="logo4meeting" className="w-[32px] h-[32px]" />
                     <div className="flex gap-[8px] items-center">
@@ -315,9 +316,9 @@ export default function MeetingMain() {
                     <span className="text-[16px]/[24px] font-semibold text-[#ffffff]">Record</span>
                 </button>
             </div>
-            <div className="flex-1 w-full flex gap-[24px]">
+            <div className={`flex-1 w-full flex ${(showChat || isShareScreen) ? 'gap-[24px]' : ''} `}>
                 {!isShareScreen ?
-                    <div id="videoGrid" className={`${showChat ? 'md:grid hidden' : 'grid'} relative md:h-[calc(100vh-192px)] h-[calc(100vh-326px)] w-full grid gap-[16px] just`}>
+                    <div id="videoGrid" className={`${showChat ? 'md:grid hidden' : 'grid'} relative md:h-[calc(100vh-192px)] h-[calc(100vh-326px)] flex-1 grid gap-[16px] just`}>
                         {currentUsers.map((user, index) => (
                             <div key={index} className="bg-[#11131A] flex-1 h-full  flex justify-center items-center relative rounded-[20px]">
                                 <div className="absolute top-[8px] right-[8px] flex  z-10">
@@ -341,6 +342,42 @@ export default function MeetingMain() {
                                 </div>
                             </div >))
                         }
+                        <div id="me" className="bg-[#11131A] flex-1 h-full  flex justify-center items-center relative rounded-[20px]">
+                            <div id="emoji-show" className="absolute inset-0 pointer-events-none overflow-hidden z-20">
+                                {animatedEmojis.map((emojiData, index) => (
+                                    <div
+                                        key={emojiData.id}
+                                        className="emoji-animation absolute"
+                                        style={{
+                                            left: `${emojiData.x}%`,
+                                            top: `${emojiData.y}%`,
+                                            animation: `emojiFloat 6s linear `,
+                                        }}
+                                    >
+                                        {emojiData.emoji}
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="absolute top-[8px] right-[8px] flex  z-10">
+                                {hasMicPermission && (
+                                    <div onClick={toggleMic} className={`cursor-pointer w-[32px] h-[32px] ${isMicEnabled ? 'bg-white' : 'bg-[#293042]'} rounded-full flex justify-center items-center`}>
+                                        {isMicEnabled ? (
+                                            <Mic className="text-[#353535] size-[16px]" />
+                                        ) : (
+                                            <MicOff className="text-white size-[16px]" />
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                            <button className="cursor-pointer absolute w-[28px] z-[6] bottom-[8px] right-[8px] h-[28px] ronded-[8px] bg-[#000000A3] flex justify-center items-center">
+                                <EllipsisVertical className="text-white size-[20px]" />
+                            </button>
+                            <span className="absolute bottom-[8px] left-[8px] px-[8px] py-[4px] rounded-[8px] bg-[#000000A3] text-white text-[14px]/[20px] font-semibold">James Lee</span>
+
+                            <div className="w-[88px] h-[88px] bg-[#eb4747] rounded-full flex justify-center items-center">
+                                <span className="text-[34px]/[40px] font-semibold text-white">JL</span>
+                            </div>
+                        </div >
                         <div className="absolute bottom-[16px] border border-[#293042] right-[16px] flex justify-center items-center z-[4] w-[240px] h-[154px] rounded-[16px] bg-[#11131A]">
                             {!isVideoEnabled ? <div>
                                 <div className="absolute top-[8px] left-[8px] z-[8]  bg-[#293042] w-[32px] h-[32px] text-white rounded-full text-[12px] flex justify-center items-center">
@@ -365,8 +402,7 @@ export default function MeetingMain() {
                     />
                 }
                 {
-                    (showChat || isShareScreen) &&
-                    <div className={`${isShareScreen && showChat === false ? "md:flex hidden" : "flex"}  md:w-[400px] w-full md:h-[calc(100vh-192px)] h-[calc(100vh-326px)] flex-col gap-[24px]`}>
+                    <div className={`${isShareScreen && showChat === false ? "md:flex hidden" : "flex"} ${(showChat || isShareScreen) ? "md:w-[400px] w-full" : "w-0"} overflow-hidden transition-all ease-in-out duration-500   md:h-[calc(100vh-192px)] h-[calc(100vh-326px)] flex-col gap-[24px]`}>
                         {isShareScreen && <div className="h-[225px]">
                             <SmallVideo isVideoEnabled={isVideoEnabled} videoRef={videoRef} />
                         </div>}
@@ -376,58 +412,58 @@ export default function MeetingMain() {
                     </div>
                 }
             </div >
-            <div className="flex  justify-between gap-[24px] md:flex-row flex-col w-full items-center">
+            <div className="flex  justify-between md:gap-[24px] gap-[12px] md:flex-row flex-col w-full items-center">
                 <div className="flex gap-[16px]">
-                    <div className={`h-[48px] border  rounded-[8px] flex  ${isMicEnabled ? 'border-[#8f8f8f]' : 'border-[#2e3038] bg-[#2E3038]'}`}>
+                    <div className={`md:h-[48px] h-[36px] border  rounded-[8px] flex  ${isMicEnabled ? 'border-[#8f8f8f]' : 'border-[#2e3038] bg-[#2E3038]'}`}>
                         <button
                             onClick={toggleMic}
                             disabled={isLoading}
-                            className={`cursor-pointer w-[49px] h-full border-r border-[#8f8f8f] rounded-l-[8px] flex justify-center items-center transition-colors ${isMicEnabled ? '' : 'bg-[#2E3038]'}`}
+                            className={`cursor-pointer md:w-[49px] w-[33px] h-full border-r border-[#8f8f8f] rounded-l-[8px] flex justify-center items-center transition-colors ${isMicEnabled ? '' : 'bg-[#2E3038]'}`}
                         >
                             {isMicEnabled ? (
-                                <Mic className="text-white size-[32px]" />
+                                <Mic className="text-white md:size-[32px] size-[24px]" />
                             ) : (
-                                <MicOff className="text-white size-[32px]" />
+                                <MicOff className="text-white md:size-[32px] size-[24px]" />
                             )}
                         </button>
-                        <div className="w-[41px] h-full flex justify-center items-center">
-                            <EllipsisVertical className="text-white size-[24px]" />
+                        <div className="md:w-[41px] w-[33px] h-full flex justify-center items-center">
+                            <EllipsisVertical className="text-white md:size-[24px] size-[20px]" />
                         </div>
                     </div>
 
                     {/* Video Control */}
-                    <div className={`h-[48px] border  rounded-[8px] flex  ${isVideoEnabled ? 'border-[#8f8f8f]' : 'border-[#2e3038] bg-[#2E3038]'}`}>
+                    <div className={`md:h-[48px] h-[36px] border  rounded-[8px] flex  ${isVideoEnabled ? 'border-[#8f8f8f]' : 'border-[#2e3038] bg-[#2E3038]'}`}>
                         <button
                             onClick={toggleVideo}
                             disabled={isLoading}
-                            className="cursor-pointer w-[49px] h-full border-r border-[#8f8f8f] rounded-l-[8px] flex justify-center items-center transition-colors"
+                            className="cursor-pointer md:w-[49px] w-[38px] h-full border-r border-[#8f8f8f] rounded-l-[8px] flex justify-center items-center transition-colors"
                         >
                             {isVideoEnabled ? (
-                                <Video className="text-white size-[32px]" />
+                                <Video className="text-white md:size-[32px] size-[24px]" />
                             ) : (
-                                <VideoOff className="text-white size-[32px]" />
+                                <VideoOff className="text-white md:size-[32px] size-[24px]" />
                             )}
                         </button>
-                        <div className="w-[41px] h-full flex justify-center items-center">
-                            <EllipsisVertical className="text-white size-[24px]" />
+                        <div className="md:w-[41px] w-[33px] h-full flex justify-center items-center">
+                            <EllipsisVertical className="text-white md:size-[24px] size-[20px]" />
                         </div>
                     </div>
 
-                    <div className="w-[48px] h-[48px] border border-[#8f8f8f] rounded-[8px] flex justify-center items-center">
+                    <div className="md:w-[48px] w-[38px] md:h-[48px] h-[36px] border border-[#8f8f8f] rounded-[8px] flex justify-center items-center">
                         <img src="/images/video/user-hidden.svg" alt="user-hidden" className="size-[32px]" />
                     </div>
                 </div>
                 <div className="flex gap-[16px]">
                     {/* Microphone Control */}
-                    <div className="h-[48px] border border-[#8f8f8f] rounded-[8px] flex">
+                    <div className="md:h-[48px] h-[36px] border border-[#8f8f8f] rounded-[8px] flex">
                         <button
-                            className={`cursor-pointer w-[49px] h-full border-r border-[#8f8f8f] rounded-l-[8px] flex justify-center items-center transition-colors`}
+                            className={`cursor-pointer md:w-[49px] w-[38px] h-full border-r border-[#8f8f8f] rounded-l-[8px] flex justify-center items-center transition-colors`}
                             onClick={isShareScreen ? stopScreenShare : startScreenShare}
                             disabled={isLoading}
                         >
-                            {isShareScreen ? <ScreenShare className="text-white size-[32px]" /> : <ScreenShareOff className="text-white size-[32px]" />}
+                            {isShareScreen ? <ScreenShare className="text-white md:size-[32px] size-[24px]" /> : <ScreenShareOff className="text-white md:size-[32px] size-[24px]" />}
                         </button>
-                        <div className="w-[41px] h-full flex justify-center items-center">
+                        <div className="md:w-[41px] w-[33px] h-full flex justify-center items-center">
                             <Popover open={isScreenSharePopoverOpen} onOpenChange={setIsScreenSharePopoverOpen}>
                                 <PopoverTrigger asChild>
                                     <button className="cursor-pointer w-[49px] h-full rounded-l-[8px] flex justify-center items-center transition-colors">
@@ -467,13 +503,13 @@ export default function MeetingMain() {
                             </Popover>
                         </div>
                     </div>
-                    <div className="w-[48px] h-[48px] border border-[#8f8f8f] rounded-[8px] flex justify-center items-center">
-                        <Hand className="text-white size-[32px]" />
+                    <div className="md:w-[48px] w-[38px] md:h-[48px] h-[36px] border border-[#8f8f8f] rounded-[8px] flex justify-center items-center">
+                        <Hand className="text-white md:size-[32px] size-[24px]" />
                     </div>
-                    <Popover>
+                    <Popover open={isEmojiPopoverOpen} onOpenChange={setIsEmojiPopoverOpen}>
                         <PopoverTrigger asChild>
-                            <button className="cursor-pointer w-[48px] h-[48px] border border-[#8f8f8f] rounded-[8px] flex justify-center items-center hover:bg-[#2e3038] transition-colors">
-                                <Smile className="text-white size-[32px]" />
+                            <button className="cursor-pointer md:w-[48px] w-[38px] md:h-[48px] h-[36px] border border-[#8f8f8f] rounded-[8px] flex justify-center items-center hover:bg-[#2e3038] transition-colors">
+                                <Smile className="text-white md:size-[32px] size-[24px]" />
                             </button>
                         </PopoverTrigger>
                         <PopoverContent className="w-[320px] bg-[#11131A] border-[#2e3038] p-[16px] rounded-[12px] shadow-lg">
@@ -490,28 +526,28 @@ export default function MeetingMain() {
                             </div>
                         </PopoverContent>
                     </Popover>
-                    <div className="h-[48px] border border-[#c30606] rounded-[8px] flex bg-[#c30606]">
+                    <div className="md:h-[48px] h-[36px] border border-[#c30606] rounded-[8px] flex bg-[#c30606]">
                         <button
-                            className={`cursor-pointer w-[49px] h-full border-r border-[#270005] rounded-l-[8px] flex justify-center items-center transition-colors`}
+                            className={`cursor-pointer md:w-[49px] w-[38px] h-full border-r border-[#270005] rounded-l-[8px] flex justify-center items-center transition-colors`}
                             onClick={() => setIsLeaveDialogOpen(true)}
                         >
-                            <LogOut className="text-white size-[32px]" />
+                            <LogOut className="text-white md:size-[32px] size-[24px]" />
                         </button>
-                        <div className="w-[41px] h-full flex justify-center items-center">
+                        <div className="md:w-[41px] w-[33px] h-full flex justify-center items-center">
                             <EllipsisVertical className="text-white size-[24px]" />
                         </div>
                     </div>
                 </div>
                 <div className="flex gap-[16px]">
-                    <div onClick={() => setShowChat(!showChat)} className="cursor-pointer w-[48px] h-[48px] border border-[#8f8f8f] rounded-[8px] flex justify-center items-center">
-                        <MessageSquare className="text-white size-[32px]" />
+                    <div onClick={() => setShowChat(!showChat)} className="cursor-pointer md:w-[48px] w-[38px] md:h-[48px] h-[36px] border border-[#8f8f8f] rounded-[8px] flex justify-center items-center">
+                        <MessageSquare className="text-white md:size-[32px] size-[24px]" />
                     </div>
-                    <div className="p-[8px] h-[48px] border border-[#8f8f8f] rounded-[8px] flex justify-center items-center gap-[8px]">
-                        <Users className="text-white size-[32px]" />
+                    <div className="p-[8px] md:h-[48px] h-[36px] border border-[#8f8f8f] rounded-[8px] flex justify-center items-center gap-[8px]">
+                        <Users className="text-white md:size-[32px] size-[24px]" />
                         <span className="text-[16px]/[24px] text-[#ffffff] font-semibold">{currentUsers.length}</span>
                     </div>
-                    <div className="w-[48px] h-[48px] border border-[#8f8f8f] rounded-[8px] flex justify-center items-center">
-                        <AlignJustify className="text-white size-[32px]" />
+                    <div className="md:w-[48px] w-[38px] md:h-[48px] h-[36px] border border-[#8f8f8f] rounded-[8px] flex justify-center items-center">
+                        <AlignJustify className="text-white md:size-[32px] size-[24px]" />
                     </div>
                 </div>
             </div>
