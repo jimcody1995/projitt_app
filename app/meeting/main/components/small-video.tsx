@@ -4,7 +4,7 @@ export default function SmallVideo({ isVideoEnabled, videoRef }: { isVideoEnable
     return (
         <div className="bg-[#11131A] flex-1 !h-full flex justify-center items-center relative rounded-[20px]">
 
-            <button className="cursor-pointer absolute w-[28px] z-[6] bottom-[8px] right-[8px] h-[28px] ronded-[8px] bg-[#000000A3] flex justify-center items-center">
+            <button className="cursor-pointer absolute w-[28px] z-[6] bottom-[8px] right-[8px] h-[28px] rounded-[8px] bg-[#000000A3] flex justify-center items-center">
                 <EllipsisVertical className="text-white size-[20px]" />
             </button>
             <span className="absolute bottom-[8px] left-[8px] px-[8px] py-[4px] rounded-[8px] bg-[#000000A3] text-white text-[14px]/[20px] font-semibold">John Doe</span>

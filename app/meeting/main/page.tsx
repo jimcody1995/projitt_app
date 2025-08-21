@@ -21,10 +21,7 @@ export default function MeetingMain() {
     const [isVideoEnabled, setIsVideoEnabled] = useState(false);
     const [hasMicPermission, setHasMicPermission] = useState(false);
     const [hasVideoPermission, setHasVideoPermission] = useState(false);
-    const [currentUsers, setCurrentUsers] = useState<MeetingUser[]>([
-        { name: "Alice Johnson", avatar: "", id: "1" },
-        { name: "Bob Smith", avatar: "", id: "2" },
-        { name: "Carol Davis", avatar: "", id: "3" }
+    const [currentUsers, setCurrentUsers] = useState<Array<{ name: string; avatar: string; id: string }>>([
     ]);
     const [isShareScreen, setIsShareScreen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -327,7 +324,7 @@ export default function MeetingMain() {
             </div>
             <div className={`flex-1 w-full flex ${(showChat || isShareScreen) ? 'gap-[24px]' : ''} `}>
                 {!isShareScreen ?
-                    <div id="videoGrid" className={`${showChat ? 'md:grid hidden' : 'grid'} relative md:h-[calc(100vh-192px)] h-[calc(100vh-326px)] flex-1 grid gap-[16px] just`}>
+                    <div id="videoGrid" className={`${showChat ? 'md:grid hidden' : 'grid'} relative md:h-[calc(100vh-192px)] h-[calc(100vh-326px)] flex-1 grid gap-[16px]`}>
                         {currentUsers.map((user, index) => (
                             <div key={index} className="bg-[#11131A] flex-1 h-full  flex justify-center items-center relative rounded-[20px]">
                                 <div className="absolute top-[8px] right-[8px] flex  z-10">
@@ -341,7 +338,7 @@ export default function MeetingMain() {
                                         </div>
                                     )}
                                 </div>
-                                <button className="cursor-pointer absolute w-[28px] z-[6] bottom-[8px] right-[8px] h-[28px] ronded-[8px] bg-[#000000A3] flex justify-center items-center">
+                                <button className="cursor-pointer absolute w-[28px] z-[6] bottom-[8px] right-[8px] h-[28px] rounded-[8px] bg-[#000000A3] flex justify-center items-center">
                                     <EllipsisVertical className="text-white size-[20px]" />
                                 </button>
                                 <span className="absolute bottom-[8px] left-[8px] px-[8px] py-[4px] rounded-[8px] bg-[#000000A3] text-white text-[14px]/[20px] font-semibold">{user.name}</span>
@@ -349,8 +346,8 @@ export default function MeetingMain() {
                                 <div className="w-[88px] h-[88px] bg-[#eb4747] rounded-full flex justify-center items-center">
                                     <span className="text-[34px]/[40px] font-semibold text-white">{user.name.split(' ').map((word: string) => word.charAt(0)).join('').toUpperCase()}</span>
                                 </div>
-                            </div >))
-                        }
+                            </div>
+                        ))}
                         <div id="me" className="bg-[#11131A] flex-1 h-full  flex justify-center items-center relative rounded-[20px]">
                             <div id="emoji-show" className="absolute inset-0 pointer-events-none overflow-hidden z-20">
                                 {animatedEmojis.map((emojiData, index) => (
@@ -378,7 +375,7 @@ export default function MeetingMain() {
                                     </div>
                                 )}
                             </div>
-                            <button className="cursor-pointer absolute w-[28px] z-[6] bottom-[8px] right-[8px] h-[28px] ronded-[8px] bg-[#000000A3] flex justify-center items-center">
+                            <button className="cursor-pointer absolute w-[28px] z-[6] bottom-[8px] right-[8px] h-[28px] rounded-[8px] bg-[#000000A3] flex justify-center items-center">
                                 <EllipsisVertical className="text-white size-[20px]" />
                             </button>
                             <span className="absolute bottom-[8px] left-[8px] px-[8px] py-[4px] rounded-[8px] bg-[#000000A3] text-white text-[14px]/[20px] font-semibold">James Lee</span>
