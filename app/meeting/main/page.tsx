@@ -10,13 +10,21 @@ import DialogContent, { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
+interface MeetingUser {
+    name: string;
+    avatar: string;
+    id: string;
+}
 
 export default function MeetingMain() {
     const [isMicEnabled, setIsMicEnabled] = useState(false);
     const [isVideoEnabled, setIsVideoEnabled] = useState(false);
     const [hasMicPermission, setHasMicPermission] = useState(false);
     const [hasVideoPermission, setHasVideoPermission] = useState(false);
-    const [currentUsers, setCurrentUsers] = useState([
+    const [currentUsers, setCurrentUsers] = useState<MeetingUser[]>([
+        { name: "Alice Johnson", avatar: "", id: "1" },
+        { name: "Bob Smith", avatar: "", id: "2" },
+        { name: "Carol Davis", avatar: "", id: "3" }
     ]);
     const [isShareScreen, setIsShareScreen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -44,12 +52,13 @@ export default function MeetingMain() {
 
         setAnimatedEmojis(prev => [...prev, newEmojiAnimation]);
 
-        // Remove the emoji after animation completes (3 seconds)
+        // Remove the emoji after animation completes (6 seconds)
         setTimeout(() => {
             setAnimatedEmojis(prev => prev.filter(e => e.id !== newEmojiAnimation.id));
-        }, 3000);
+        }, 6000);
 
         // Close the emoji popover
+        setIsEmojiPopoverOpen(false);
 
         console.log("Selected emoji:", emoji);
     };
@@ -338,7 +347,7 @@ export default function MeetingMain() {
                                 <span className="absolute bottom-[8px] left-[8px] px-[8px] py-[4px] rounded-[8px] bg-[#000000A3] text-white text-[14px]/[20px] font-semibold">{user.name}</span>
 
                                 <div className="w-[88px] h-[88px] bg-[#eb4747] rounded-full flex justify-center items-center">
-                                    <span className="text-[34px]/[40px] font-semibold text-white">{user.name.split(' ').map(word => word.charAt(0)).join('').toUpperCase()}</span>
+                                    <span className="text-[34px]/[40px] font-semibold text-white">{user.name.split(' ').map((word: string) => word.charAt(0)).join('').toUpperCase()}</span>
                                 </div>
                             </div >))
                         }

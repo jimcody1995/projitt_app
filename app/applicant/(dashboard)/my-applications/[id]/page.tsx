@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import moment from 'moment';
 import { getApplicantInfo, getQuestions } from '@/api/applicant';
 import { customToast } from '@/components/common/toastr';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, use } from 'react';
 import { useBasic } from '@/context/BasicContext';
 
 /**
@@ -18,12 +18,13 @@ import { useBasic } from '@/context/BasicContext';
  */
 export default function ApplicationDetails({ params }: { params: Promise<{ id: string }> }) {
   /**
-   * Retrieves dynamic route parameter for application ID.
+   * Retrieves dynamic route parameter for application ID using the use hook for Next.js 15
    */
+  const resolvedParams = use(params);
   const [applicantInfo, setApplicantInfo] = useState<any>(null);
   const [questions, setQuestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [jobId, setJobId] = useState<string>('');
+  const [jobId, setJobId] = useState<string>(resolvedParams.id);
   const [applicantId, setApplicantId] = useState<string>('');
   const { country } = useBasic();
   // Define the country item type
@@ -33,25 +34,13 @@ export default function ApplicationDetails({ params }: { params: Promise<{ id: s
     [key: string]: any;
   };
 
-  // Handle async params and localStorage
+  // Handle localStorage access on client side
   useEffect(() => {
-    const initializeData = async () => {
-      try {
-        const resolvedParams = await params;
-        setJobId(resolvedParams.id);
-
-        // Access localStorage only on client side
-        if (typeof window !== 'undefined') {
-          const storedApplicantId = localStorage.getItem('applicantId');
-          setApplicantId(storedApplicantId || '');
-        }
-      } catch (error) {
-        console.error('Error initializing data:', error);
-      }
-    };
-
-    initializeData();
-  }, [params]);
+    if (typeof window !== 'undefined') {
+      const storedApplicantId = localStorage.getItem('applicantId');
+      setApplicantId(storedApplicantId || '');
+    }
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
