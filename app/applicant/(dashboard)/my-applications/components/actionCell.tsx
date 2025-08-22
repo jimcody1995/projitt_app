@@ -34,7 +34,7 @@ export function ActionsCell(): JSX.Element {
         id="actions-dropdown-menu"
         data-testid="actions-dropdown-menu"
       >
-        <div
+        {/* <div
           className="cursor-pointer hover:bg-[#e9e9e9] text-[12px]/[18px] py-[7px] px-[12px] rounded-[8px]"
           id="edit-option"
           data-testid="edit-option"
@@ -78,7 +78,7 @@ export function ActionsCell(): JSX.Element {
               Unpublish
             </div>
           }
-        />
+        /> */}
         <CheckDialog
           action="delete"
           trigger={
