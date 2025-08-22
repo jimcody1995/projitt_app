@@ -8,6 +8,7 @@ import { getApplicantInfo, getQuestions } from '@/api/applicant';
 import { customToast } from '@/components/common/toastr';
 import { useEffect, useState, use } from 'react';
 import { useBasic } from '@/context/BasicContext';
+import LoadingSpinner from '@/components/common/loading-spinner';
 
 /**
  * ApplicationDetails Component
@@ -146,7 +147,7 @@ export default function ApplicationDetails({ params }: { params: Promise<{ id: s
 
         {loading ? <>
           <div className="flex items-center justify-center mt-[30px] pb-[20px]">
-            <Loader className="size-[20px] animate-spin" />
+            <LoadingSpinner />
           </div>
         </> : <div
           className="pl-[40px] pr-[77px] pt-[30px] flex flex-col gap-[36px] pb-[20px]"

@@ -17,6 +17,7 @@ import { getQuestions } from '@/api/applicant';
 import { QuestionsRef } from './components/questions';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/context/SessionContext';
+import LoadingSpinner from '@/components/common/loading-spinner';
 
 /**
  * Apply component manages the multi-step job application process.
@@ -230,7 +231,7 @@ export default function Apply() {
           </div>
           <div className="flex-1 relative">
             {loading && <div className="absolute top-0 left-0 z-[3] w-full h-full flex justify-center items-center bg-[#bebebe22]">
-              <Loader className="size-[30px] spinner animate-spin z-[4]" />
+              <LoadingSpinner />
             </div>}
             <div className="pl-[40px] pt-[36px] pb-[21px] border-b border-[#e9e9e9] md:hidden block" id="mobile-header" data-testid="mobile-header">
               <p className="text-[18px]/[30px] text-[#353535]">Senior Data Analyst</p>

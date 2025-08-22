@@ -7,6 +7,7 @@ import { ChevronDown, ChevronUp, FileText, FileUp, Loader, Trash } from 'lucide-
 import React from 'react';
 import { uploadMedia } from '@/api/media';
 import { customToast } from '@/components/common/toastr';
+import LoadingSpinner from '@/components/common/loading-spinner';
 
 // Dynamically import pdfjs-dist only on client side
 let pdfjsLib: typeof import('pdfjs-dist') | null = null;
@@ -179,7 +180,7 @@ export default function FileDropUpload({
           >
             {loading && (
               <div className="flex items-center justify-center w-full h-full bg-[#f5f5f566] absolute top-0 left-0 z-10">
-                <Loader className="size-[30px] animate-spin text-[#0D978B]" />
+                <LoadingSpinner />
               </div>
             )}
             <input {...getInputProps()} data-test-id="file-input" />
