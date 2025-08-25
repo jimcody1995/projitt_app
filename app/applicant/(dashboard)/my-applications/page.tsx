@@ -89,7 +89,7 @@ export default function MyApplications() {
         id="welcome-message"
         data-test-id="welcome-message"
       >
-        Welcome {session.full_name},
+        Welcome {session.full_name}
       </p>
 
       {loading ? (

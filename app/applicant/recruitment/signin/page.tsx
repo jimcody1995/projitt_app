@@ -236,7 +236,7 @@ export default function SignIn() {
               data-testid="login-form-title"
               data-test-id="login-form-title"
             >
-              Welcome Alice,
+              Welcome,
             </h1>
             <p className="text-[14px]/[20px] text-[#626262] mt-[4px]">
               Enter the 6-digit code sent to {email} to continue your application

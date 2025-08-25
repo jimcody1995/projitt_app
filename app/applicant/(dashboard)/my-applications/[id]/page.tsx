@@ -277,7 +277,7 @@ export default function ApplicationDetails({ params }: { params: Promise<{ id: s
               ))}
               <div className="mt-[8px]">
                 <p className="text-[14px]/[22px] text-[#a5a5a5]">Skills</p>
-                <p className="text-[14px]/[22px] text-[#353535] font-medium">{applicantInfo?.skills.map((skill: any, index: number) => <span key={index}>{skill.name}</span>)}</p>
+                <p className="text-[14px]/[22px] text-[#353535] font-medium">{applicantInfo?.skills.map((skill: any, index: number) => <span key={index}>{skill.name}, </span>)}</p>
               </div>
               <div className="mt-[8px]">
                 <p className="text-[14px]/[22px] text-[#a5a5a5]">LinkedIn</p>
