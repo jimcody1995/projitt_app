@@ -14,7 +14,7 @@ import phoneNumber from '@/constants/phoneNumber.json';
 import { getApplicantInfo } from '@/api/applicant';
 import { customToast } from '@/components/common/toastr';
 import { useSession } from '@/context/SessionContext';
-
+import { errorHandlers } from '@/utils/error-handler';
 /**
  * @description
  * ContactInfo is a form component for collecting and validating user contact information.
@@ -59,6 +59,14 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean; getData: () => a
     });
     const [applicantInfo, setApplicantInfo] = React.useState<any>(null);
 
+    // State for managing country states
+    interface StateData {
+      name: string;
+      state_code: string;
+    }
+    const [countryStates, setCountryStates] = React.useState<StateData[]>([]);
+    const [isLoadingStates, setIsLoadingStates] = React.useState(false);
+
     const getApplicantInfoData = async () => {
       try {
         if (setLoading) setLoading(true);
@@ -66,8 +74,8 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean; getData: () => a
         if (response.status === true) {
           setApplicantInfo(response.data);
         }
-      } catch (error: any) {
-        customToast('Error fetching applicant info', error?.response?.data?.message as string, 'error');
+      } catch (error: unknown) {
+        errorHandlers.custom(error, "Error fetching applicant info");
       } finally {
         if (setLoading) setLoading(false);
       }
@@ -94,6 +102,50 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean; getData: () => a
         });
       }
     }, [applicantInfo]);
+
+    // Load states when country changes
+    useEffect(() => {
+      if (formData.country) {
+        setIsLoadingStates(true);
+        fetch('https://countriesnow.space/api/v0.1/countries/states', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ country: formData.country })
+        })
+          .then(res => res.json())
+          .then(data => {
+            console.log('States data:', data);
+
+            if (data?.data?.states) {
+              setCountryStates(data.data.states);
+
+              // Check if current formData.state exists in the fetched states
+              if (formData.state) {
+                const stateExists = data.data.states.some((state: StateData) =>
+                  state.name === formData.state || state.state_code === formData.state
+                );
+
+                if (!stateExists) {
+                  // If state doesn't exist in the list, clear it
+                  setFormData(prev => ({ ...prev, state: '' }));
+                }
+              }
+            }
+          })
+          .catch(error => {
+            console.error('Error fetching states:', error);
+            customToast('Error fetching states', 'Failed to load states for selected country', 'error');
+            setCountryStates([]);
+          })
+          .finally(() => {
+            setIsLoadingStates(false);
+          });
+      } else {
+        // Clear states when no country is selected
+        setCountryStates([]);
+        setFormData(prev => ({ ...prev, state: '' }));
+      }
+    }, [formData.country]);
 
 
 
@@ -251,7 +303,7 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean; getData: () => a
           <p className="font-medium text-[14px]/[22px] text-[#353535]">Email Address *</p>
           <Input
             className={`mt-[12px] h-[48px]`}
-            value={applicantInfo?.applicant?.email || ''}
+            value={session.email || ''}
             disabled
             data-testid="contact-email-input"
             id="contact-email-input"
@@ -294,17 +346,37 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean; getData: () => a
           </div>
           <div className="w-full">
             <p className="font-medium text-[14px]/[22px] text-[#353535]">State *</p>
-            <Input
-              className={`mt-[12px] h-[48px] ${errors.state ? 'border-red-500' : ''}`}
+            <Select
               value={formData.state}
-              onChange={(e) => handleInputChange('state', e.target.value)}
-              onBlur={() => {
-                const error = validateField('state', formData.state);
-                setErrors(prev => ({ ...prev, state: error }));
+              onValueChange={(val) => {
+                handleInputChange('state', val);
+                setErrors(prev => ({ ...prev, state: '' }));
               }}
-              data-testid="contact-state-input"
-              id="contact-state-input"
-            />
+              disabled={!formData.country || isLoadingStates}
+            >
+              <SelectTrigger
+                className={`h-[48px] mt-[12px] ${errors.state ? 'border-red-500' : ''}`}
+                data-testid="contact-state-select-trigger"
+                id="contact-state-select-trigger"
+              >
+                <SelectValue
+                  placeholder={isLoadingStates ? "Loading states..." : formData.country ? "Select State" : "Select country first"}
+                  data-testid="contact-state-select-value"
+                />
+              </SelectTrigger>
+              <SelectContent data-testid="contact-state-select-content">
+                {countryStates.map((state: StateData) => (
+                  <SelectItem
+                    key={state.state_code}
+                    value={state.name}
+                    data-testid={`contact-state-select-item-${state.state_code}`}
+                    id={`contact-state-select-item-${state.state_code}`}
+                  >
+                    {state.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {errors.state && (
               <p className="text-red-500 text-sm mt-1">{errors.state}</p>
             )}
@@ -336,6 +408,8 @@ const ContactInfo = React.forwardRef<{ validate: () => boolean; getData: () => a
               onValueChange={(val) => {
                 handleInputChange('country', val);
                 setErrors(prev => ({ ...prev, country: '' }));
+                // Clear state when country changes
+                setFormData(prev => ({ ...prev, state: '' }));
               }}
             >
               <SelectTrigger

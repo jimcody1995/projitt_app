@@ -105,6 +105,11 @@ export const getJobInfo = async (jobId: string | undefined, applicantId: string 
     return response.data;
 }
 
+export const getJobDetailInfo = async (jobId: string) => {
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_PATH}/job/single/${jobId}`);
+    return response.data;
+}
+
 export const updateApplicantEmail = async (data: any) => {
     const response = await axios.post(`${process.env.NEXT_PUBLIC_BASE_PATH}/job/applicant-change-email`, data);
     return response.data;

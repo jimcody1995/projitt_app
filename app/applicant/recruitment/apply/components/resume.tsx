@@ -191,7 +191,7 @@ const Resume = forwardRef<ResumeRef, {
           data-testid="resume-upload"
         />
         <FileDropUpload
-          label="Other document"
+          label="Cover Letter"
           setFile={handleOtherDocumentsChange}
           setID={setOtherDocumentsID}
           file={otherDocuments}

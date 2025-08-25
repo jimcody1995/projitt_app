@@ -8,7 +8,7 @@ import Resume from './components/resume';
 import Qualifications from './components/qualifications';
 import Questions from './components/questions';
 import Review from './components/review';
-import { applicantContactInfo, applicantResume, getApplicantInfo, getJobInfo, submitApplicant } from '@/api/applicant';
+import { applicantContactInfo, applicantResume, getApplicantInfo, getJobInfo, getJobDetailInfo, submitApplicant } from '@/api/applicant';
 import { useSearchParams } from 'next/navigation';
 import { customToast } from '@/components/common/toastr';
 import { QualificationsRef } from './components/qualifications';
@@ -18,6 +18,7 @@ import { QuestionsRef } from './components/questions';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/context/SessionContext';
 import LoadingSpinner from '@/components/common/loading-spinner';
+import { errorHandlers } from '@/utils/error-handler';
 
 /**
  * Apply component manages the multi-step job application process.
@@ -39,6 +40,7 @@ export default function Apply() {
     questions: null,
   });
   const [job, setJob] = useState<any>(null);
+  const [jobDetails, setJobDetails] = useState<any>(null);
   // Refs for each step component
   const contactInfoRef = React.useRef<{ validate: () => boolean; getData: () => any }>(null);
   const resumeRef = React.useRef<{ validate: () => boolean; getData: () => any }>(null);
@@ -55,6 +57,7 @@ export default function Apply() {
     try {
       const response = await getJobInfo(jobId as string, applicantId as string);
       if (response) {
+        console.log(response.data[0]);
         setJob(response.data[0]);
       }
     } catch (error: any) {
@@ -64,9 +67,23 @@ export default function Apply() {
     }
   };
 
+  const getJobDetailInfoData = async () => {
+    try {
+      const response = await getJobDetailInfo(jobId as string);
+      if (response) {
+        console.log('Job Details:', response.data);
+        setJobDetails(response.data);
+      }
+    } catch (error: any) {
+      console.error('Error fetching job details:', error);
+      // Don't show toast for job details as it's not critical
+    }
+  };
+
   useEffect(() => {
     if (session.authenticated) {
       getJobInfoData();
+      getJobDetailInfoData();
     }
   }, [jobId, applicantId]);
 
@@ -90,11 +107,7 @@ export default function Apply() {
               }
             }
           } catch (error) {
-            customToast(
-              'Please fill all required fields',
-              'Missing details',
-              'error'
-            );
+            errorHandlers.custom(error, "Missing details");
             return;
           } finally {
             setLoading(false);
@@ -121,11 +134,7 @@ export default function Apply() {
               }
             }
           } catch (error) {
-            customToast(
-              'Please fill all required fields',
-              'Missing details',
-              'error'
-            );
+            errorHandlers.custom(error, "Missing details");
             return;
           } finally {
             setLoading(false);
@@ -143,11 +152,7 @@ export default function Apply() {
             setLoading(false);
           } catch (error) {
             setLoading(false);
-            customToast(
-              'Please fill all required fields',
-              'Missing details',
-              'error'
-            );
+            errorHandlers.custom(error, "Missing details");
             return;
           }
         }
@@ -161,11 +166,7 @@ export default function Apply() {
             setCurrentStep(currentStep + 1);
           } catch (error) {
             setLoading(false);
-            customToast(
-              'Please fill all required fields',
-              'Missing details',
-              'error'
-            );
+            errorHandlers.custom(error, "Missing details");
             return;
           }
         }
@@ -180,11 +181,7 @@ export default function Apply() {
           setLoading(false);
         } catch (error) {
           setLoading(false);
-          customToast(
-            'Please fill all required fields',
-            'Missing details',
-            'error'
-          );
+          errorHandlers.custom(error, "Missing details");
           return;
         }
       default:
@@ -220,10 +217,20 @@ export default function Apply() {
         <div className="lg:w-[865px] w-full flex bg-white mx-auto mt-[44px]">
           <div className="w-[321px] border-r border-[#e9e9e9] md:block hidden" id="sidebar" data-testid="sidebar">
             <div className="pl-[40px] pt-[36px] pb-[21px] border-b border-[#e9e9e9] ">
-              <p className="text-[18px]/[30px] text-[#353535]" id="job-title" data-testid="job-title">{job?.job?.title}</p>
-              <p className="text-[14px]/[22px] text-[#8f8f8f]" id="company-location" data-testid="company-location">
-                {job?.country?.name}
-              </p>
+              <p className="text-[18px]/[30px] text-[#353535]" id="job-title" data-testid="job-title">{jobDetails?.title || 'Senior Data Analyst'}</p>
+              <div className="flex items-center gap-[12px]" id="company-location" data-testid="company-location">
+                <p className="text-[14px]/[22px] text-[#8f8f8f]">
+                  {jobDetails?.country?.name || 'United States'} (#{jobId})
+                </p>
+                {jobDetails?.status && (
+                  <span
+                    className="px-[8px] py-[2px] text-[12px]/[16px] font-medium text-white bg-[#0D978B] rounded-full"
+                    data-testid="job-status-badge"
+                  >
+                    {jobDetails?.status || 'closed'}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="pt-[40px] pl-[40px]">
               <Stepper currentStep={currentStep} />
@@ -234,10 +241,20 @@ export default function Apply() {
               <LoadingSpinner />
             </div>}
             <div className="pl-[40px] pt-[36px] pb-[21px] border-b border-[#e9e9e9] md:hidden block" id="mobile-header" data-testid="mobile-header">
-              <p className="text-[18px]/[30px] text-[#353535]">Senior Data Analyst</p>
-              <p className="text-[14px]/[22px] text-[#8f8f8f]">
-                Big and Small Enterprise Ltd ~ USA
-              </p>
+              <p className="text-[18px]/[30px] text-[#353535]">{jobDetails?.title || 'Senior Data Analyst'}</p>
+              <div className="flex items-center gap-[12px]">
+                <p className="text-[14px]/[22px] text-[#8f8f8f]">
+                  {jobDetails?.country?.name || 'United States'}(#{jobId})
+                </p><br />
+                {jobDetails?.status && (
+                  <span
+                    className="px-[8px] py-[2px] text-[12px]/[16px] font-medium text-white bg-[#0D978B] rounded-full"
+                    data-testid="mobile-job-status-badge"
+                  >
+                    {jobDetails?.status || 'closed'}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="pt-[33px] px-[40px] pb-[19px] relative">
 
