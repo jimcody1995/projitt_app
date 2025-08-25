@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { getApplicantInfo, getQuestions } from '@/api/applicant';
 import { customToast } from '@/components/common/toastr';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface ReviewProps {
   jobId?: string | null;
@@ -13,10 +14,12 @@ interface ReviewProps {
 export default function Review({ jobId, applicantId, setLoading }: ReviewProps) {
   const [applicantInfo, setApplicantInfo] = useState<any>(null);
   const [questions, setQuestions] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+      setIsLoading(true);
       try {
         if (!jobId || !applicantId) return;
         // Fetch applicant info
@@ -34,11 +37,101 @@ export default function Review({ jobId, applicantId, setLoading }: ReviewProps) 
         customToast('Error fetching data', error?.response?.data?.message as string, 'error');
       } finally {
         setLoading(false);
+        setIsLoading(false);
       }
     };
 
     fetchData();
   }, [jobId, applicantId, setLoading]);
+
+  if (isLoading) {
+    return (
+      <div>
+        <p className="font-medium text-[22px]/[30px]">Review</p>
+        <p className="mt-[8px] text-[14px]/[13px] text-[#787878]">Review your application</p>
+        <div className="mt-[25px] flex flex-col gap-[36px]">
+          {/* Contact Info Skeleton */}
+          <div>
+            <p className="text-[16px]/[24px] font-medium text-[#1c1c1c]">Contact Info</p>
+            <div className="mt-[8px] space-y-3">
+              <div>
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-48 mt-1" />
+              </div>
+              <div>
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-56 mt-1" />
+              </div>
+              <div>
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-4 w-64 mt-1" />
+              </div>
+              <div>
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-4 w-40 mt-1" />
+              </div>
+            </div>
+          </div>
+
+          {/* Resume/Cover Letter Skeleton */}
+          <div>
+            <p className="text-[16px]/[24px] font-medium text-[#1c1c1c]">Resume/Cover Letter</p>
+            <div className="mt-[8px] space-y-2">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-4 w-40" />
+            </div>
+          </div>
+
+          {/* Experience Skeleton */}
+          <div>
+            <p className="text-[16px]/[24px] font-medium text-[#1c1c1c]">Experience</p>
+            <div className="mt-[8px] space-y-4">
+              {[1, 2].map((index) => (
+                <div key={index} className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-56" />
+                  <Skeleton className="h-4 w-40" />
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-4 w-72" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Skills and Links Skeleton */}
+          <div>
+            <div className="mt-[8px] space-y-3">
+              <div>
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-4 w-48 mt-1" />
+              </div>
+              <div>
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-64 mt-1" />
+              </div>
+              <div>
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-4 w-64 mt-1" />
+              </div>
+            </div>
+          </div>
+
+          {/* Questions Skeleton */}
+          <div>
+            <p className="text-[16px]/[24px] font-medium text-[#1c1c1c]">Applicant Questions</p>
+            <div className="mt-[8px] space-y-4">
+              {[1, 2, 3].map((index) => (
+                <div key={index} className="space-y-2">
+                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-4 w-80" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -106,7 +199,7 @@ export default function Review({ jobId, applicantId, setLoading }: ReviewProps) 
           ))}
           <div className="mt-[8px]">
             <p className="text-[14px]/[22px] text-[#a5a5a5]">Skills</p>
-            <p className="text-[14px]/[22px] text-[#353535] font-medium">{applicantInfo?.skills.map((skill: any, index: number) => <span key={index}>{skill.name}</span>)}</p>
+            <p className="text-[14px]/[22px] text-[#353535] font-medium">{applicantInfo?.skills.map((skill: any, index: number) => <span key={index}>{skill.name}, </span>)}</p>
           </div>
           <div className="mt-[8px]">
             <p className="text-[14px]/[22px] text-[#a5a5a5]">LinkedIn</p>

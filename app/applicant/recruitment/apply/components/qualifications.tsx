@@ -663,7 +663,7 @@ const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(functi
         </button>
       </div>
       <div className="mt-[32px]">
-        <p className="font-medium text-[14px]/[22px] text-[#353535]">Skills</p>
+        <p className="font-medium text-[14px]/[22px] text-[#353535]">Skills *</p>
         <div className="mt-[16px]">
           <TagInput
             suggestions={skills || []}
@@ -675,7 +675,7 @@ const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(functi
         </div>
       </div>
       <div className="mt-[32px]">
-        <p className="font-medium text-[14px]/[22px] text-[#353535]">LinkedIn</p>
+        <p className="font-medium text-[14px]/[22px] text-[#353535]">LinkedIn *</p>
         <div className="mt-[16px]">
           <Input
             placeholder="LinkedIn"
@@ -688,7 +688,7 @@ const Qualifications = forwardRef<QualificationsRef, QualificationsProps>(functi
         </div>
       </div>
       <div className="mt-[32px]">
-        <p className="font-medium text-[14px]/[22px] text-[#353535]">Website/Portfolio Link</p>
+        <p className="font-medium text-[14px]/[22px] text-[#353535]">Website/Portfolio Link *</p>
         <div className="mt-[16px]">
           <Input
             placeholder="Website/Portfolio Link"
